@@ -1,0 +1,11 @@
+--2023-04-22 14:40:23--  https://raw.githubusercontent.com/csailvision/places365/master/labels_sunattribute.txt
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.111.133, 185.199.109.133, 185.199.108.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 909 [text/plain]
+Saving to: ‘labels_sunattribute.txt’
+
+     0K                                                       100% 30,4M=0s
+
+2023-04-22 14:40:23 (30,4 MB/s) - ‘labels_sunattribute.txt’ saved [909/909]
+
