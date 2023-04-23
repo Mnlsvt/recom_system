@@ -13,7 +13,7 @@ from PIL import Image
 
 # th architecture to use
 arch = "alexnet"
-images = "palia_spitia.jpeg"
+images = "hair_salon.jpeg"
 
 # load the pre-trained weights
 model_file = '/home/mnlsvt/Desktop/places_dataset/models/%s_places365.pth.tar' %arch
@@ -64,6 +64,47 @@ print('{} prediction on {}'.format(arch,img_name))
 # output the prediction
 for i in range(0, 3):
     print('{:.3f} -> {}'.format(probs[i], classes[idx[i]]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

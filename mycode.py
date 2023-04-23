@@ -7,7 +7,7 @@ import re
 
 predictions = [[['' for k in range(3)] for j in range(3)] for i in range(4)]
 
-images = "palia_spitia.jpeg"
+images = "hair_salon.jpeg"
 
 with open('unified_code.py', 'r+') as unifiedf:
         content_unifiedf = unifiedf.readlines()
@@ -93,11 +93,11 @@ predictions is a 3d array in which the values are assigned like this:
     .
     .
 ]
-
 '''
 
 # Code that runs the wideresnet model and gets the image attributes as well
 
+# Attributes that the widerestnet model extracts from the image
 attribute_predictions = []
 
 # run basic_code.py and capture its output
@@ -137,7 +137,6 @@ for i in range(3):
 pred_lines_attr = input_data.split('\n')
 pred_attr = pred_lines_attr[-2]
 pred_attr += ","
-print(pred_attr)
 
 #for j in range(9): # 9 is the number of the attributes that we take from the widerestnet model
 temp_word = ""
@@ -169,7 +168,7 @@ print(attribute_predictions)
 # combined_predictions is an array of the common predictions that the models had
 combined_predictions = []
 
-
+# We count how many times each prediction appear
 word_count = {}
 
 for sublist in predictions:
@@ -179,5 +178,10 @@ for sublist in predictions:
             word_count[word] = 1
         else:
             word_count[word] += 1
+
+# If not enough models voted on the same predictions, we remove them
+for word_temp, value in list(word_count.items()):
+    if (value < 2):
+        word_count.pop(word_temp)
 
 print(word_count)

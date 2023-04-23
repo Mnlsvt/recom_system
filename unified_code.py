@@ -12,7 +12,7 @@ import numpy as np
 import cv2
 from PIL import Image
 
-images = "palia_spitia.jpeg"
+images = "hair_salon.jpeg"
 
  # hacky way to deal with the Pytorch 1.0 update
 def recursion_change_bn(module):
