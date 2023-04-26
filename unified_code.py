@@ -155,7 +155,8 @@ weight_softmax[weight_softmax<0] = 0
 #img_url = 'http://places.csail.mit.edu/demo/6.jpg'
 #os.system('wget %s -q -O test.jpg' % img_url)
 
-img = Image.open('/home/mnlsvt/Desktop/places_dataset/test_images/%s' %images)
+img_path = os.path.join(current_dir, '..', 'test_images', '%s' %images)
+img = Image.open(img_path)
 input_img = V(tf(img).unsqueeze(0))
 
 # forward pass
@@ -191,7 +192,7 @@ print('Class activation map is saved as cam.jpg')
 CAMs = returnCAM(features_blobs[0], weight_softmax, [idx[0]])
 
 # render the CAM and output
-img = cv2.imread('/home/mnlsvt/Desktop/places_dataset/test_images/%s' %images)
+img = cv2.imread(img_path)
 height, width, _ = img.shape
 heatmap = cv2.applyColorMap(cv2.resize(CAMs[0],(width, height)), cv2.COLORMAP_JET)
 result = heatmap * 0.4 + img * 0.5
