@@ -11,16 +11,20 @@ from torch.nn import functional as F
 import os
 from PIL import Image
 
-# th architecture to use
+# Get the current directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+
+# the architecture to use
 arch = "alexnet"
-images = "hair_salon.jpeg"
+images = "village.jpeg"
 
 # load the pre-trained weights
-model_file = '/home/mnlsvt/Desktop/places_dataset/models/%s_places365.pth.tar' %arch
-if not os.access(model_file, os.W_OK):
-    model_file = '%s_places365.pth.tar' %arch
-    weight_url = 'http://places2.csail.mit.edu/models_places365/' + model_file
-    os.system('wget ' + weight_url)
+model_file = os.path.join(current_dir, '..', 'models', '%s_places365.pth.tar' %arch)
+#if not os.access(model_file, os.W_OK):
+#    model_file = '%s_places365.pth.tar' %arch
+#    weight_url = 'http://places2.csail.mit.edu/models_places365/' + model_file
+#    os.system('wget ' + weight_url)
 
 model = models.__dict__[arch](num_classes=365)
 checkpoint = torch.load(model_file, map_location=lambda storage, loc: storage)
@@ -49,7 +53,8 @@ with open(file_name) as class_file:
 classes = tuple(classes)
 
 # load the test image
-img_name = '/home/mnlsvt/Desktop/places_dataset/test_images/%s' %images
+#img_name = '../test_images/%s' %images
+img_name = os.path.join(current_dir, '..', 'test_images', '%s' %images)
 
 img = Image.open(img_name)
 input_img = V(centre_crop(img).unsqueeze(0))
