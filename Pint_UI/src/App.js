@@ -5,28 +5,22 @@ import './App.css';
 import { auth } from './firebaseAuth';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-
-// Sample data
-const initialImages = [
-    { id: 1, url: '/test_images/beach.jpg', likes: 0 },
-    { id: 2, url: '/test_images/farm.jpeg', likes: 0 },
-    { id: 3, url: '/test_images/amsterdam.jpeg', likes: 0 },
-    { id: 4, url: '/test_images/gkotzostrena.jpg', likes: 0 },
-    { id: 5, url: '/test_images/hair_salon.jpeg', likes: 0 },
-    { id: 6, url: '/test_images/london.jpg', likes: 0 },
-    { id: 7, url: '/test_images/palia_spitia.jpeg', likes: 0 },
-    { id: 8, url: '/test_images/street2.jpeg', likes: 0 },
-    { id: 9, url: '/test_images/street3.jpg.jpeg', likes: 0 },
-    { id: 10, url: '/test_images/street.jpeg', likes: 0 },
-    { id: 11, url: '/test_images/trena2.jpg', likes: 0 },
-    { id: 12, url: '/test_images/trena.jpg', likes: 0 },
-    { id: 13, url: '/test_images/tzalliaschorus.jpg', likes: 0 },
-    { id: 14, url: '/test_images/tzalliasdromos.jpg', likes: 0 },
-    { id: 15, url: '/test_images/tzallias.jpg', likes: 0 },
+import 'firebase/compat/firestore';
 
 
-    // add more image objects...
-];
+// Initialization of Firebase and Firestore
+const firebaseConfig = {
+    apiKey: "AIzaSyDvKNc1V079WbA3B4CBHZAwqcxDcW8Cm7o",
+    authDomain: "ptuxiakhmanwlhs.firebaseapp.com",
+    projectId: "ptuxiakhmanwlhs",
+    storageBucket: "ptuxiakhmanwlhs.appspot.com",
+    messagingSenderId: "1086816491330",
+    appId: "1:1086816491330:web:c7c9278565c6d2b86c5adb",
+    measurementId: "G-K8S7N9DSZ7"
+};
+firebase.initializeApp(firebaseConfig);
+//const auth = firebase.auth();
+const db = firebase.firestore();
 
 
 function SignInWithGoogle() {
@@ -60,10 +54,12 @@ function SignUpPage() {
 
 
 function App() {
-    const [images, setImages] = useState(initialImages);
+    const [images, setImages] = useState([]);
+    //const [images, setImages] = useState(initialImages);
     const [selectedImage, setSelectedImage] = useState(null);
     const [isExpanded, setExpanded] = useState(false);
     const [user, setUser] = useState(null);
+    const [showHeart, setShowHeart] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -74,23 +70,51 @@ function App() {
             }
         });
 
+        const fetchData = async () => {
+            const data = await db.collection("images").get();
+            setImages(data.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+        }
+        fetchData();
+
 
         return () => unsubscribe();
     }, []);
 
-    const handleLike = (id) => {
+    const handleLike = async (id) => {
+        const docRef = db.collection('images').doc(id);
+        const doc = await docRef.get();
+        const likes = doc.data().likes || [];
+
+        if (likes.includes(user.uid)) {
+            await docRef.update({ likes: firebase.firestore.FieldValue.arrayRemove(user.uid) });
+        } else {
+            await docRef.update({ likes: firebase.firestore.FieldValue.arrayUnion(user.uid) });
+        }
+
         setImages((prevImages) =>
             prevImages.map((image) =>
-                image.id === id ? { ...image, isLiked: !image.isLiked } : image
+                image.id === id ? { ...image, likes: likes.includes(user.uid) ? likes.filter(uid => uid !== user.uid) : [...likes, user.uid] } : image
             )
         );
 
         setSelectedImage((prevSelectedImage) =>
             prevSelectedImage && prevSelectedImage.id === id
-                ? { ...prevSelectedImage, isLiked: !prevSelectedImage.isLiked }
+                ? { ...prevSelectedImage, likes: likes.includes(user.uid) ? likes.filter(uid => uid !== user.uid) : [...likes, user.uid] }
                 : prevSelectedImage
         );
     };
+
+
+    const handleDoubleLike = (id) => {
+        const selectedLikes = selectedImage.likes || [];
+        if (!selectedLikes.includes(user.uid)) {
+            handleLike(id);
+            setShowHeart(true);
+            setTimeout(() => setShowHeart(false), 3000);
+        }
+    };
+
+
 
     const handleSelect = (image) => {
         setSelectedImage(image);
@@ -126,26 +150,43 @@ function App() {
                             <img src={image.url} alt="" />
                             <div className="image-item-info">
                                 <button onClick={(e) => { e.stopPropagation(); handleLike(image.id); }}>
-                                    {image.isLiked ? "❤️" : "🤍"}
+                                    {image.likes && image.likes.includes(user.uid) ? "❤️" : "🤍"}
                                 </button>
+
                             </div>
                         </div>
                     ))}
                     {selectedImage && isExpanded && (
                         <div className="expandedImage" onClick={(e) => e.target === e.currentTarget && handleDeselect()}>
                             <div className="expandedImageContainer">
-                                <img src={selectedImage.url} alt="" />
+                                <img
+                                    src={selectedImage.url}
+                                    alt=""
+                                    onDoubleClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDoubleLike(selectedImage.id);
+                                    }}
+                                />
+                                {showHeart && <div className="heart">❤️</div>}
                                 <div className="image-item-info">
-                                    <button onClick={(e) => { e.stopPropagation(); handleLike(selectedImage.id); }}>
-                                        {selectedImage.isLiked ? "❤️" : "🤍"}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleLike(selectedImage.id);
+                                        }}
+                                    >
+                                        {selectedImage.likes && selectedImage.likes.includes(user.uid) ? "❤️" : "🤍"}
                                     </button>
                                 </div>
                             </div>
+
+
+
                         </div>
                     )}
                 </div>
             ) : (
-// User is signed out, render the sign in/sign up forms
+                // User is signed out, render the sign in/sign up forms
                 <div className="login-form">
                     <h2>Sign In</h2>
                     <button onClick={SignInWithGoogle}>Sign in with Google</button>
