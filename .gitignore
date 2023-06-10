@@ -1,0 +1,15 @@
+# dependencies
+/Pint_UI/node_modules
+
+# testing
+/Pint_UI/coverage
+
+# production
+/Pint_UI/build
+
+# misc
+Pint_UI/.DS_Store
+Pint_UI/.env
+Pint_UI/npm-debug.log*
+Pint_UI/yarn-debug.log*
+Pint_UI/yarn-error.log*

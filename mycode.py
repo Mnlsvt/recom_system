@@ -7,7 +7,7 @@ import re
 
 predictions = [[['' for k in range(3)] for j in range(3)] for i in range(4)]
 
-images = "village.jpeg"
+images = "street3.jpg"
 
 with open('unified_code.py', 'r+') as unifiedf:
         content_unifiedf = unifiedf.readlines()
