@@ -178,7 +178,7 @@
 
 .logout-button {
     position: absolute;
-    right: 30px;
+    left: 30px;
     top: 60px;
     background-color: #f44336;
     color: white;
@@ -196,7 +196,17 @@
     top: 30px;
     display: flex;
     align-items: center;
+    gap: 10px;        
+}
+
+.logout-button {
+    position: absolute;
+    left: 100px;
+    top: 50px;
+    display: flex;
+    align-items: center;
     gap: 10px;
+    text-align: center;       
 }
 
 .user-info img {
@@ -237,6 +247,31 @@
     width: 40%;
 }
 
+.trashButton {
+    width: 5%;
+    height: 50px;
+    margin: 30px;
+}
+
+.profileButtonMain {
+    text-decoration: none;
+    color: #da190b;
+    font-weight: 600;
+    margin-right: 25px;
+    margin-bottom: 25px;
+    p:hover{
+        color: blue;
+    }
+}
+
+.uploadButtonMain {
+    text-decoration: none;
+    color: #da190b;
+    font-weight: 600;
+    p:hover{
+        color: blue;
+    }
+}
 
 
 @keyframes fade-out {
@@ -264,6 +299,12 @@
     .logout-button {
         top: 40px;
         width: 100px;
+    }
+    
+    .back-button,
+    .upload-button {
+        width: 100px;
+        height: 40px;
     }
 }
 
@@ -293,6 +334,22 @@
         height: 30px;
     }
 
+    .back-button,
+    .upload-button {
+        width: 75px;
+        height: 30px;
+    }
+
+    .logout-button {
+        top: 20px;
+        left: 20px;
+    }
+
+    .user-info {
+        top: 10px;
+        right: 20px;
+    }
+
     /* Disable image expansion and add the double-click like functionality*/
     .image-item:hover {
         transform: none;
@@ -300,21 +357,5 @@
 
     .expandedImage {
         display: none;
-    }
-}
-
-@media screen and (max-width: 1024px) {
-    .back-button,
-    .upload-button {
-        width: 100px;
-        height: 40px;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .back-button,
-    .upload-button {
-        width: 75px;
-        height: 30px;
     }
 }

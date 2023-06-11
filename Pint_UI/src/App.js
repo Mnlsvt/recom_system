@@ -73,7 +73,7 @@ function Profile({ user, images, onDelete }) {
                 {userImages.map(image => (
                     <div key={image.id}>
                         <img src={image.url} alt="" />
-                        <button onClick={() => onDelete(image.id, image.url)}>🗑️</button>
+                        <button className="trashButton" onClick={() => onDelete(image.id, image.url)}>🗑️</button>
                     </div>
                 ))}
             </div>
@@ -100,8 +100,8 @@ function Upload({ user }) {
         const fileRef = storageRef.child(file.name);
         await fileRef.put(file);
         const fileUrl = await fileRef.getDownloadURL();
-        setRecentImageUrls(prevUrls => [fileUrl, ...prevUrls]); 
-    
+        setRecentImageUrls(prevUrls => [fileUrl, ...prevUrls]);
+
         await db.collection('images').add({
             url: fileUrl,
             uploaderId: user.uid,
@@ -110,7 +110,7 @@ function Upload({ user }) {
         setIsLoading(false);
         setFile(null);
     };
-    
+
 
     return (
         <div>
@@ -126,8 +126,8 @@ function Upload({ user }) {
             </div>
         </div>
     );
-    
-    
+
+
 }
 
 
@@ -159,7 +159,7 @@ function App() {
 
         return () => unsubscribe();
     }, []);
-    
+
 
     const handleLike = async (id) => {
         const docRef = db.collection('images').doc(id);
@@ -188,12 +188,12 @@ function App() {
     const handleDelete = async (id, url) => {
         const docRef = db.collection('images').doc(id);
         await docRef.delete();
-    
+
         const imageRef = storage.refFromURL(url);
         await imageRef.delete();
-    
+
         setImages(prevImages => prevImages.filter(image => image.id !== id));
-    };    
+    };
 
 
     const handleDoubleLike = (id) => {
@@ -201,7 +201,7 @@ function App() {
         if (!selectedLikes.includes(user.uid)) {
             handleLike(id);
             setShowHeart(true);
-            setTimeout(() => setShowHeart(false), 3000);
+            setTimeout(() => setShowHeart(false), 1000);
         }
     };
 
@@ -221,16 +221,20 @@ function App() {
         auth.signOut();
     };
 
+
+    // The profileButtonMain and uploadButtonMain are the button showing on the main page (when the user logs in)
     return (
         <Router>
             <div className="App">
                 <header className="App-header">
                     <h1>Ptuxiakh Manwlh</h1>
                     {user && (
-                        <div className="user-info">
+                        <div >
+                            <div className="user-info">
                             <img src={user.photoURL} alt="User" />
-                            <Link to="/profile">{user.displayName}</Link>
-                            <Link to="/upload">Upload</Link>
+                            <p><Link className="profileButtonMain" to="/profile">{user.displayName}</Link></p>
+                            <p><Link className="uploadButtonMain" to="/upload">Upload</Link></p>
+                            </div>
                             <button className="logout-button" onClick={handleSignOut}>Logout</button>
                         </div>
                     )}
