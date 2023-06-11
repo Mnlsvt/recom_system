@@ -214,11 +214,107 @@
     z-index: 1;
 }
 
+.back-button,
+.upload-button {
+    width: 150px;
+    height: 50px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    padding: 0 20px;
+    margin: 5px 0;
+    background-color: #2196F3;
+    color: white;
+    cursor: pointer;
+}
+
+.back-button:hover,
+.upload-button:hover {
+    background-color: #0b77dd;
+}
+
+.uploadImages {
+    width: 40%;
+}
+
+
+
 @keyframes fade-out {
     0% {
         opacity: 1;
     }
     100% {
         opacity: 0;
+    }
+}
+
+
+@media screen and (max-width: 1024px) {
+    .masonry {
+        column-count: 2;
+    }
+
+    .login-form input,
+    .login-form button,
+    .logout-button {
+        width: 200px;
+        height: 40px;
+    }
+
+    .logout-button {
+        top: 40px;
+        width: 100px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .masonry {
+        column-count: 1;
+    }
+
+    .login-form input,
+    .login-form button,
+    .logout-button {
+        width: 150px;
+        height: 30px;
+    }
+
+    .logout-button {
+        top: 30px;
+        width: 75px;
+    }
+
+    .user-info {
+        right: 10px;
+    }
+
+    .user-info img {
+        width: 30px;
+        height: 30px;
+    }
+
+    /* Disable image expansion and add the double-click like functionality*/
+    .image-item:hover {
+        transform: none;
+    }
+
+    .expandedImage {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .back-button,
+    .upload-button {
+        width: 100px;
+        height: 40px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .back-button,
+    .upload-button {
+        width: 75px;
+        height: 30px;
     }
 }
