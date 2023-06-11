@@ -56,7 +56,7 @@ function SignUpPage() {
     );
 }
 
-function Profile({ user, images, onDelete }) {
+function Profile({ user, images, onDelete, onLike }) {
     const navigate = useNavigate();
     const userImages = images.filter(image => image.uploaderId === user.uid);
 
@@ -71,9 +71,14 @@ function Profile({ user, images, onDelete }) {
             <h2>{user.displayName}'s Profile</h2>
             <div className="user-images">
                 {userImages.map(image => (
-                    <div key={image.id}>
+                    <div key={image.id} className="image-item">   
                         <img src={image.url} alt="" />
-                        <button className="trashButton" onClick={() => onDelete(image.id, image.url)}>🗑️</button>
+                        <div className="image-item-info">
+                            <button onClick={(e) => { e.stopPropagation(); onLike(image.id); }}>
+                                {image.likes && image.likes.includes(user.uid) ? "❤️Like" : "🤍Like"}
+                            </button>
+                            <button className="trashButton" onClick={() => onDelete(image.id, image.url)}>🗑️Delete</button>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -241,7 +246,7 @@ function App() {
                 </header>
 
                 <Routes>
-                    <Route path="/profile" element={<Profile user={user} images={images} onDelete={handleDelete} />} />
+                    <Route path="/profile" element={<Profile user={user} images={images} onDelete={handleDelete} onLike={handleLike} />} />
                     <Route path="/upload" element={<Upload user={user} />} />
                     <Route path="/" element={
                         user ? (
