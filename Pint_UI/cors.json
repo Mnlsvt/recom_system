@@ -1,6 +1,6 @@
 [
   {
-    "origin": ["https://ptuxiakhmanwlhs.web.app/"],
+    "origin": ["*"],
     "method": ["GET"],
     "maxAgeSeconds": 3600
   }
