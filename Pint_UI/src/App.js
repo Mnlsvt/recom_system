@@ -64,14 +64,15 @@ function Profile({ user, images, onDelete, onLike }) {
         navigate('/');
     }
 
+    const userImagesExists = userImages.filter(image => image.url); // Only images with url are included
     return (
         <div>
             <button onClick={handleBack} className="back-button">Back</button>
             <img src={user.photoURL} alt="User" />
             <h2>{user.displayName}'s Profile</h2>
             <div className="user-images">
-                {userImages.map(image => (
-                    <div key={image.id} className="image-item">   
+                {userImagesExists.map(image => (
+                    <div key={image.id} className="image-item">
                         <img src={image.url} alt="" />
                         <div className="image-item-info">
                             <button onClick={(e) => { e.stopPropagation(); onLike(image.id); }}>
@@ -98,6 +99,7 @@ function Upload({ user }) {
         navigate('/');
     }
 
+    /*
     const handleUpload = async () => {
         if (isLoading || !file) return;
         setIsLoading(true);
@@ -115,6 +117,46 @@ function Upload({ user }) {
         setIsLoading(false);
         setFile(null);
     };
+    */
+
+    const handleUpload = async () => {
+        if (isLoading || !file) return;
+        setIsLoading(true);
+
+        const fileExtension = file.name.split('.').pop();
+
+        // Save the image data in Firestore, excluding the tags
+        const imageDoc = await db.collection('images').add({
+            uploaderId: user.uid,
+            likes: [],
+            extension: fileExtension  // Save the file extension in Firestore
+        });
+
+        const storageRef = storage.ref();
+        const fileRef = storageRef.child(`${imageDoc.id}.${fileExtension}`);  // Append the extension to the file name
+        await fileRef.put(file);
+        const fileUrl = await fileRef.getDownloadURL();
+        setRecentImageUrls(prevUrls => [fileUrl, ...prevUrls]);
+
+        await db.collection('images').doc(imageDoc.id).update({ url: fileUrl }); // Update the URL in the document
+
+        // Create a FormData object, append the file and the image id
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('image_id', imageDoc.id);
+
+        // Make a POST request to the Python server
+        //await fetch('https://firstcontainer-bssad.run-eu-central1.goorm.site/predict', {
+        //    method: 'POST',
+        //    body: formData
+        //});
+        navigator.sendBeacon('https://firstcontainer-bssad.run-eu-central1.goorm.site/predict', formData);
+
+        setIsLoading(false);
+        setFile(null);
+    };
+
+
 
 
     return (
@@ -236,9 +278,9 @@ function App() {
                     {user && (
                         <div >
                             <div className="user-info">
-                            <img src={user.photoURL} alt="User" />
-                            <p><Link className="profileButtonMain" to="/profile">{user.displayName}</Link></p>
-                            <p><Link className="uploadButtonMain" to="/upload">Upload</Link></p>
+                                <img src={user.photoURL} alt="User" />
+                                <p><Link className="profileButtonMain" to="/profile">{user.displayName}</Link></p>
+                                <p><Link className="uploadButtonMain" to="/upload">Upload</Link></p>
                             </div>
                             <button className="logout-button" onClick={handleSignOut}>Logout</button>
                         </div>
