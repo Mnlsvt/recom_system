@@ -1,13 +1,18 @@
 
 import subprocess
 import re
+import torch
+import torchvision
+from PIL import Image
+import torchvision.transforms as T
+import os
 
 
 # Code that runs resnet18, resnet50 and alexnet models and gets their outputs in a 3d array called predictions
 
 predictions = [[['' for k in range(3)] for j in range(3)] for i in range(4)]
 
-images = "hair_salon.jpeg"
+images = "street3.jpg"
 
 with open('unified_code.py', 'r+') as unifiedf:
         content_unifiedf = unifiedf.readlines()
@@ -185,3 +190,67 @@ for word_temp, value in list(word_count.items()):
         word_count.pop(word_temp)
 
 print(word_count)
+
+                                #Object Recognition code bellow
+
+images_obj_path = '/home/mnlsvt/Desktop/ptuxiakh/test_images/' + images
+images_obj = Image.open(images_obj_path)
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# object_model_file = os.path.join(current_dir, '..', '..', 'models', 'fasterrcnn_resnet50_fpn_coco-258fb6c6.pth')
+object_model_file = '/home/mnlsvt/Desktop/ptuxiakh/models/fasterrcnn_resnet50_fpn_coco-258fb6c6.pth'
+
+# model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=False) # Do not download weights
+model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=None)
+
+#model.load_state_dict(torch.load(current_dir, '..', 'models', 'fasterrcnn_resnet50_fpn.pth'))
+model.load_state_dict(torch.load(object_model_file))
+model.eval() # Make sure to call model.eval() to set dropout and batch normalization layers to evaluation mode
+
+# Load an image and convert it to a PyTorch tensor
+transform = T.Compose([T.ToTensor()])
+images_obj = transform(images_obj)
+
+# Get predictions
+with torch.no_grad():
+    object_prediction = model([images_obj])
+
+
+# Extracting the 'labels' part of the dictionary output
+# labels_tensor = object_prediction['labels']
+for item in object_prediction:
+    if 'labels' in item:
+        labels_tensor = item['labels']
+
+for item in object_prediction:
+    if 'scores' in item:
+        score_tensor = item['scores']
+# Converting the tensor to a list
+labels_list = labels_tensor.tolist()
+labels_list = list(set(labels_list))
+score_list = score_tensor.tolist()
+# print(labels_list)
+
+# Read the object classes file
+label_dict = {}
+
+with open('object_classes.txt', 'r') as f:
+    for line in f:
+        items = line.strip().split('\t') # split by tab
+        label_dict[int(items[0])] = items[1:] # convert the first item to integer and assign the rest as value
+
+# print(label_dict)
+
+def get_label_by_number(label_dict, number):
+    return label_dict[number]
+
+final_objects = []
+score_counter = 0
+for item in labels_list:
+    score_counter += 1
+    for i in label_dict:
+        if ((i == item) and (score_list[score_counter] > 0.55)):
+            label_dict[i].append('%.3f'%score_list[score_counter])
+            # print(get_label_by_number(label_dict, i), '%.3f'%score_list[score_counter])  # Should print ['person', 'person', 'person', 'person']
+            final_objects.append(get_label_by_number(label_dict, i))
+print(final_objects)
