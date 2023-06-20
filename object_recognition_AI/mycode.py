@@ -1,13 +1,15 @@
-
 import subprocess
-import re
+from PIL import Image
+import torchvision.transforms as T
+import os
+from collections import defaultdict
 
 
 # Code that runs resnet18, resnet50 and alexnet models and gets their outputs in a 3d array called predictions
 
 predictions = [[['' for k in range(3)] for j in range(3)] for i in range(4)]
 
-images = "tzallias.jpg"
+images = "azur.jpg"
 
 with open('unified_code.py', 'r+') as unifiedf:
         content_unifiedf = unifiedf.readlines()
@@ -93,11 +95,11 @@ predictions is a 3d array in which the values are assigned like this:
     .
     .
 ]
-
 '''
 
 # Code that runs the wideresnet model and gets the image attributes as well
 
+# Attributes that the widerestnet model extracts from the image
 attribute_predictions = []
 
 # run basic_code.py and capture its output
@@ -137,7 +139,6 @@ for i in range(3):
 pred_lines_attr = input_data.split('\n')
 pred_attr = pred_lines_attr[-2]
 pred_attr += ","
-print(pred_attr)
 
 #for j in range(9): # 9 is the number of the attributes that we take from the widerestnet model
 temp_word = ""
@@ -166,3 +167,39 @@ if len(predictions) > 3:
 
 print(attribute_predictions)
 
+# combined_predictions is an array of the common predictions that the models had
+
+# We count how many times each prediction appear
+word_count = {}
+
+for sublist in predictions:
+    for item in sublist:
+        word = item[2]
+        if word not in word_count:
+            word_count[word] = 1
+        else:
+            word_count[word] += 1
+
+# If not enough models voted on the same predictions, we remove them
+for word_temp, value in list(word_count.items()):
+    if (value < 2):
+        word_count.pop(word_temp)
+
+print(word_count)
+
+                                #Object Recognition code bellow
+
+
+with open('object_recognition.py', 'r+') as object:
+        content_object = object.readlines()
+        for i, line in enumerate(content_object):
+            if 'images =' in line:
+                content_object[i] = 'images = "%s"\n' %images  # Modify the line with the new value
+                break  # Stop searching for the line once found
+        object.seek(0)  # Go back to the beginning of the file
+        object.writelines(content_object)  # Write the modified content back to the file
+        object.truncate()
+
+result = subprocess.run(['python3', 'object_recognition.py'], stdout=subprocess.PIPE)
+object_rec_data = result.stdout.decode('utf-8').strip()
+print(object_rec_data)

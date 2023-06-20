@@ -14,7 +14,7 @@ from PIL import Image
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-images = "street3.jpg"
+images = "azur.jpg"
 
  # hacky way to deal with the Pytorch 1.0 update
 def recursion_change_bn(module):
@@ -97,7 +97,7 @@ def returnTF():
 def load_model():
     # this model has a last conv feature map as 14x14
     arch = 'wideresnet18'
-    model_file = os.path.join(current_dir, '..', 'models', '%s_places365.pth.tar' %arch)
+    model_file = os.path.join(current_dir, '..', '..', 'models', '%s_places365.pth.tar' %arch)
     #model_file = '/home/mnlsvt/Desktop/places_dataset/%s_places365.pth.tar' %arch
     #if not os.access(model_file, os.W_OK):
     #    #model_file = '/home/mnlsvt/Desktop/places_dataset/%s_places365.pth.tar' %arch
@@ -155,7 +155,7 @@ weight_softmax[weight_softmax<0] = 0
 #img_url = 'http://places.csail.mit.edu/demo/6.jpg'
 #os.system('wget %s -q -O test.jpg' % img_url)
 
-img_path = os.path.join(current_dir, '..', 'test_images', '%s' %images)
+img_path = os.path.join(current_dir, '..', '..', 'test_images', '%s' %images)
 img = Image.open(img_path)
 input_img = V(tf(img).unsqueeze(0))
 

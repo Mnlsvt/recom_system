@@ -17,10 +17,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # the architecture to use
 arch = "alexnet"
-images = "street3.jpg"
+images = "azur.jpg"
 
 # load the pre-trained weights
-model_file = os.path.join(current_dir, '..', 'models', '%s_places365.pth.tar' %arch)
+model_file = os.path.join(current_dir, '..', '..', 'models', '%s_places365.pth.tar' %arch)
 #if not os.access(model_file, os.W_OK):
 #    model_file = '%s_places365.pth.tar' %arch
 #    weight_url = 'http://places2.csail.mit.edu/models_places365/' + model_file
@@ -54,7 +54,7 @@ classes = tuple(classes)
 
 # load the test image
 #img_name = '../test_images/%s' %images
-img_name = os.path.join(current_dir, '..', 'test_images', '%s' %images)
+img_name = os.path.join(current_dir, '..', '..', 'test_images', '%s' %images)
 
 img = Image.open(img_name)
 input_img = V(centre_crop(img).unsqueeze(0))
@@ -69,6 +69,48 @@ print('{} prediction on {}'.format(arch,img_name))
 # output the prediction
 for i in range(0, 3):
     print('{:.3f} -> {}'.format(probs[i], classes[idx[i]]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
