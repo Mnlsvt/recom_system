@@ -150,7 +150,7 @@ function Upload({ user }) {
         //    method: 'POST',
         //    body: formData
         //});
-        navigator.sendBeacon('https://firstcontainer-bssad.run-eu-central1.goorm.site/predict', formData);
+        navigator.sendBeacon('https://metadata-generator-ghqsm.run-eu-central1.goorm.site/predict', formData);
 
         setIsLoading(false);
         setFile(null);
