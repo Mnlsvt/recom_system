@@ -3,4 +3,6 @@ torch
 torchvision
 Pillow
 numpy
-yolov5
+flask
+firebase_admin
+

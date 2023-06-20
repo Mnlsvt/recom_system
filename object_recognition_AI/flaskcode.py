@@ -1,14 +1,13 @@
-from firebase_admin import storage, firestore
+from firebase_admin import storage, firestore, credentials
 from flask import Flask, request
 import os
 import subprocess
-import re
 import firebase_admin
-from firebase_admin import credentials
 from flask import jsonify
 import requests
+import ast
 
-cred = credentials.Certificate("ptuxiakhmanwlhs-firebase-adminsdk-a3vdi-130cba8a2e.json")
+cred = credentials.Certificate("../ptuxiakhmanwlhs-firebase-adminsdk-a3vdi-130cba8a2e.json")
 firebase_admin.initialize_app(cred, {
     'storageBucket': 'ptuxiakhmanwlhs.appspot.com'
 })
@@ -229,8 +228,39 @@ def predict():
         if (value < 2):
             word_count.pop(word_temp)
 
-    desired_output = list(word_count.keys())
-    print(desired_output)
+    background_space = list(word_count.keys())
+    print(background_space)
+
+
+    # object recognition
+
+    with open('object_recognition.py', 'r+') as object:
+        content_object = object.readlines()
+        for i, line in enumerate(content_object):
+            if 'images =' in line:
+                content_object[i] = 'images = "%s"\n' %images  # Modify the line with the new value
+                break  # Stop searching for the line once found
+        object.seek(0)  # Go back to the beginning of the file
+        object.writelines(content_object)  # Write the modified content back to the file
+        object.truncate()
+
+    result = subprocess.run(['python3', 'object_recognition.py'], stdout=subprocess.PIPE)
+    object_rec_data = result.stdout.decode('utf-8').strip()
+    # print(object_rec_data)
+    object_rec_data = object_rec_data.split('\n')
+    print(object_rec_data[8])
+    result_objects = object_rec_data[8]
+
+    result_objectsList = ast.literal_eval(result_objects)
+
+    final_objectsList = []
+
+    for item in result_objectsList:
+        final_objectsList.append(item[0])
+
+    print(final_objectsList)
+
+
 
     os.remove(filename2)
     
@@ -241,14 +271,15 @@ def predict():
     doc_ref.set({
         'metadata': {
             'attribute_predictions': attribute_predictions,
-            'backgroundSpace': desired_output
+            'backgroundSpace': background_space,
+            'objectsFound': result_objectsList
         }
     }, merge=True)
     
     # Return the results
     return jsonify({
         "attribute_predictions": attribute_predictions,
-        "backgroundSpace": desired_output
+        "backgroundSpace": background_space
     })
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80, debug=True)

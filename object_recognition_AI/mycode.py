@@ -2,6 +2,7 @@ import subprocess
 from PIL import Image
 import torchvision.transforms as T
 import os
+import ast
 from collections import defaultdict
 
 
@@ -200,6 +201,18 @@ with open('object_recognition.py', 'r+') as object:
         object.writelines(content_object)  # Write the modified content back to the file
         object.truncate()
 
-result = subprocess.run(['python3', 'object_recognition.py'], stdout=subprocess.PIPE)
-object_rec_data = result.stdout.decode('utf-8').strip()
-print(object_rec_data)
+result_obj = subprocess.run(['python3', 'object_recognition.py'], stdout=subprocess.PIPE)
+object_rec_data = result_obj.stdout.decode('utf-8').strip()
+print(object_rec_data,"\n\n")
+object_rec_data = object_rec_data.split('\n')
+print(object_rec_data[8])
+result_objects = object_rec_data[8]
+
+result_objectsList = ast.literal_eval(result_objects)
+
+final_objectsList = []
+
+for item in result_objectsList:
+    final_objectsList.append(item[0])
+
+print(final_objectsList)
