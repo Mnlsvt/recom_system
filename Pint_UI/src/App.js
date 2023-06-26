@@ -146,11 +146,11 @@ function Upload({ user }) {
         formData.append('image_id', imageDoc.id);
 
         // Make a POST request to the Python server
-        //await fetch('https://firstcontainer-bssad.run-eu-central1.goorm.site/predict', {
+        //await fetch('https://metadata-generator-ghqsm.run-eu-central1.goorm.site/predict', {
         //    method: 'POST',
         //    body: formData
         //});
-        navigator.sendBeacon('https://metadata-generator-ghqsm.run-eu-central1.goorm.site/predict', formData);
+        navigator.sendBeacon('https://metadata-gen-mguay.run-eu-central1.goorm.site/predict', formData);
 
         setIsLoading(false);
         setFile(null);
@@ -332,7 +332,7 @@ function App() {
                         ) : (
                             <div className="login-form">
                                 <h2>Sign In</h2>
-                                <button onClick={SignInWithGoogle}>Sign in with Google</button>
+                                <button className="googleButton" onClick={SignInWithGoogle}><img src="/img/googleIcon.png" alt="googleIcon" width="100%"/></button>
                                 <form onSubmit={(e) => {
                                     e.preventDefault();
                                     SignInWithEmailPassword(e.target.email.value, e.target.password.value);
