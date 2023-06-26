@@ -332,7 +332,7 @@ function App() {
                         ) : (
                             <div className="login-form">
                                 <h2>Sign In</h2>
-                                <button className="googleButton" onClick={SignInWithGoogle}><img src="/img/googleIcon.png" alt="googleIcon" width="100%"/></button>
+                                <button className="googleButton" onClick={SignInWithGoogle}><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png" alt="googleIcon" width="100%"/></button>
                                 <form onSubmit={(e) => {
                                     e.preventDefault();
                                     SignInWithEmailPassword(e.target.email.value, e.target.password.value);

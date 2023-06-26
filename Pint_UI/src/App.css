@@ -174,14 +174,18 @@
     cursor: pointer;
 }
 
-.googleButton {
-    background-color: transparent !important;
-    width: 5% !important;
-    margin: 2% !important;
-}
-
 .login-form button:hover {
     background-color: #45a049;
+}
+
+.login-form button.googleButton {
+    background-color: transparent;
+    width: 5% ;
+    margin: 2% ;
+}
+
+.login-form button.googleButton:hover {
+    background-color: transparent;
 }
 
 .logout-button {
@@ -319,6 +323,10 @@
         top: 40px;
         width: 100px;
     }
+
+    .login-form button.googleButton {
+        width: 10%;
+    }
     
     .back-button,
     .upload-button {
@@ -333,7 +341,7 @@
     }
 
     .login-form {
-        height: 450px;
+        height: 500px;
     }
 
     .login-form input,
@@ -346,6 +354,10 @@
     .logout-button {
         top: 30px;
         width: 75px;
+    }
+
+    .login-form button.googleButton{
+        width: 18%;
     }
 
     .user-info {
