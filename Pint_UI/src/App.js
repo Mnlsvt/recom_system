@@ -35,11 +35,26 @@ function SignInWithGoogle() {
 function SignInWithEmailPassword(email, password) {
     auth.signInWithEmailAndPassword(email, password);
 }
-
-function SignUpWithEmailPassword(email, password) {
-    auth.createUserWithEmailAndPassword(email, password);
+/*
+function SignUpWithEmailPassword(email, password, username) {
+    auth.createUserWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+        // user successfully created, now set the username
+        return userCredential.user.updateProfile({
+            displayName: username
+        })
+        .then(() => {
+            // Get the current user again after profile update
+            const user = firebase.auth().currentUser;
+            setUser(user); // Assuming setUser is your React useState function for user
+        });
+    })
+    .catch((error) => {
+        console.error(error);
+    });
 }
-
+*/
+/*
 function SignUpPage() {
     return (
         <div className="signup-form">
@@ -55,13 +70,25 @@ function SignUpPage() {
         </div>
     );
 }
+*/
 
 function Profile({ user, images, onDelete, onLike }) {
     const navigate = useNavigate();
     const userImages = images.filter(image => image.uploaderId === user.uid);
+    const [isLoading, setIsLoading] = useState(true);
 
     const handleBack = () => {
         navigate('/');
+    }
+
+    const handleDelete = () => {
+        user.delete().then(() => {
+            console.log("User deleted");
+            // Redirect to the homepage after successful deletion
+            navigate('/');
+        }).catch((error) => {
+            console.error("Error deleting user:", error);
+        });
     }
 
     const userImagesExists = userImages.filter(image => image.url); // Only images with url are included
@@ -83,6 +110,7 @@ function Profile({ user, images, onDelete, onLike }) {
                     </div>
                 ))}
             </div>
+            <button onClick={handleDelete}>Delete My Account</button>
         </div>
     );
 }
@@ -157,8 +185,6 @@ function Upload({ user }) {
     };
 
 
-
-
     return (
         <div>
             <button onClick={handleBack} className="back-button">Back</button>
@@ -179,7 +205,6 @@ function Upload({ user }) {
 
 
 
-
 function App() {
     const [images, setImages] = useState([]);
     //const [images, setImages] = useState(initialImages);
@@ -187,6 +212,35 @@ function App() {
     const [isExpanded, setExpanded] = useState(false);
     const [user, setUser] = useState(null);
     const [showHeart, setShowHeart] = useState(false);
+
+
+
+    const SignUpWithEmailPassword = (email, password, username) => {
+        auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // user successfully created, now set the username
+            return userCredential.user.updateProfile({
+                displayName: username
+            })
+            .then(() => {
+                // Get the current user again after profile update
+                const user = firebase.auth().currentUser;
+                setUser(user);
+            });
+        })
+        .catch((error) => {
+            // Handle Errors here.
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            if (errorCode === 'auth/wrong-password') {
+                alert('Wrong password.');
+            } else {
+                alert(errorMessage);
+            }
+            console.error(error);
+        });
+    }
+
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -278,7 +332,7 @@ function App() {
                     {user && (
                         <div >
                             <div className="user-info">
-                                <img src={user.photoURL} alt="User" />
+                                <img src={user.photoURL || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPuk1ANhAl5pGnajh1J2Jk83E0kVXsJtUy7Q&usqp=CAU"} alt="User" />
                                 <p><Link className="profileButtonMain" to="/profile">{user.displayName}</Link></p>
                                 <p><Link className="uploadButtonMain" to="/upload">Upload</Link></p>
                             </div>
@@ -344,8 +398,9 @@ function App() {
                                 <h2>Sign Up</h2>
                                 <form onSubmit={(e) => {
                                     e.preventDefault();
-                                    SignUpWithEmailPassword(e.target.email.value, e.target.password.value);
+                                    SignUpWithEmailPassword(e.target.email.value, e.target.password.value, e.target.username.value);
                                 }}>
+                                    <input name="username" type="text" placeholder="Your Username" />
                                     <input name="email" type="email" placeholder="Email" />
                                     <input name="password" type="password" placeholder="Password" />
                                     <button type="submit">Sign up</button>
