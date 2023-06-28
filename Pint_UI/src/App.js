@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
@@ -8,6 +8,10 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
+import Modal from 'react-modal';
+
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
 
 
 // Initialization of Firebase and Firestore
@@ -35,42 +39,7 @@ function SignInWithGoogle() {
 function SignInWithEmailPassword(email, password) {
     auth.signInWithEmailAndPassword(email, password);
 }
-/*
-function SignUpWithEmailPassword(email, password, username) {
-    auth.createUserWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-        // user successfully created, now set the username
-        return userCredential.user.updateProfile({
-            displayName: username
-        })
-        .then(() => {
-            // Get the current user again after profile update
-            const user = firebase.auth().currentUser;
-            setUser(user); // Assuming setUser is your React useState function for user
-        });
-    })
-    .catch((error) => {
-        console.error(error);
-    });
-}
-*/
-/*
-function SignUpPage() {
-    return (
-        <div className="signup-form">
-            <h2>Sign Up</h2>
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                SignUpWithEmailPassword(e.target.email.value, e.target.password.value);
-            }}>
-                <input name="email" type="email" placeholder="Email" />
-                <input name="password" type="password" placeholder="Password" />
-                <button type="submit">Sign up</button>
-            </form>
-        </div>
-    );
-}
-*/
+
 
 function Profile({ user, images, onDelete, onLike }) {
     const navigate = useNavigate();
@@ -81,21 +50,82 @@ function Profile({ user, images, onDelete, onLike }) {
         navigate('/');
     }
 
-    const handleDelete = () => {
-        user.delete().then(() => {
-            console.log("User deleted");
-            // Redirect to the homepage after successful deletion
-            navigate('/');
-        }).catch((error) => {
-            console.error("Error deleting user:", error);
-        });
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const fileInputRef = useRef();
+
+    const openModal = () => {
+        setModalIsOpen(true);
     }
+
+    const closeModal = () => {
+        setModalIsOpen(false);
+    }
+
+    const [selectedImage, setSelectedImage] = useState(null);
+
+    const handleDelete = () => {
+        if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            user.delete().then(() => {
+                console.log("User deleted");
+                // Redirect to the homepage after successful deletion
+                navigate('/');
+            }).catch((error) => {
+                console.error("Error deleting user:", error);
+            });
+        }
+    }
+
+
+    const handleImageUpload = () => {
+        if (selectedImage) {
+            const storageRef = ref(storage, 'profilePictures/' + user.uid);
+            const uploadTask = uploadBytesResumable(storageRef, selectedImage);
+
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    // You can use this section to display upload progress
+                }, 
+                (error) => {
+                    console.log(error);
+                }, 
+                () => {
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        user.updateProfile({
+                            photoURL: downloadURL
+                        }).then(() => {
+                            console.log('Profile picture updated');
+                        }).catch((error) => {
+                            console.log('Error updating profile picture: ', error);
+                        });
+                    });
+                }
+            );
+        }
+    }
+
+    const handleImageChange = (e) => {
+        if (e.target.files[0]) {
+            setSelectedImage(e.target.files[0]);
+            handleImageUpload();
+        }
+        closeModal();
+    }
+
 
     const userImagesExists = userImages.filter(image => image.url); // Only images with url are included
     return (
         <div>
+            <img src={user.photoURL || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPuk1ANhAl5pGnajh1J2Jk83E0kVXsJtUy7Q&usqp=CAU"} width="2%" alt="User" onClick={openModal} style={{ cursor: 'pointer' }}/>
+            <Modal
+                isOpen={modalIsOpen}
+                onRequestClose={closeModal}
+                contentLabel="Profile Picture"
+            >
+                <img src={user.photoURL} alt="Profile" style={{ width: '100%', height: 'auto' }} />
+                <button onClick={() => fileInputRef.current.click()}>Change Image</button>
+                <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImageChange} />
+            </Modal>
             <button onClick={handleBack} className="back-button">Back</button>
-            <img src={user.photoURL} alt="User" />
             <h2>{user.displayName}'s Profile</h2>
             <div className="user-images">
                 {userImagesExists.map(image => (
@@ -110,7 +140,7 @@ function Profile({ user, images, onDelete, onLike }) {
                     </div>
                 ))}
             </div>
-            <button onClick={handleDelete}>Delete My Account</button>
+            <button className="deleteAccount" onClick={handleDelete}>Delete My Account</button>
         </div>
     );
 }
@@ -126,26 +156,6 @@ function Upload({ user }) {
     const handleBack = () => {
         navigate('/');
     }
-
-    /*
-    const handleUpload = async () => {
-        if (isLoading || !file) return;
-        setIsLoading(true);
-        const storageRef = storage.ref();
-        const fileRef = storageRef.child(file.name);
-        await fileRef.put(file);
-        const fileUrl = await fileRef.getDownloadURL();
-        setRecentImageUrls(prevUrls => [fileUrl, ...prevUrls]);
-
-        await db.collection('images').add({
-            url: fileUrl,
-            uploaderId: user.uid,
-            likes: []
-        });
-        setIsLoading(false);
-        setFile(null);
-    };
-    */
 
     const handleUpload = async () => {
         if (isLoading || !file) return;
