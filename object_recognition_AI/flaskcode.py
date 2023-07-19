@@ -8,7 +8,7 @@ import requests
 import ast
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-cred_path = os.path.join(script_dir, "../../ptuxiakhmanwlhs-firebase-adminsdk-a3vdi-130cba8a2e.json")
+cred_path = os.path.join(script_dir, "../../ptuxiakhmanwlhs-firebase-adminsdk.json")
 
 cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred, {

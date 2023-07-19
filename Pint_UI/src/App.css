@@ -255,6 +255,11 @@
     background-color: #0b77dd;
 }
 
+.profileChange{
+    width: 200px;
+    height: 10%;
+}
+
 .deleteAccount{
     width: 150px;
     height: 50px;

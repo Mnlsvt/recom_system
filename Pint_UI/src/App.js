@@ -116,15 +116,18 @@ function Profile({ user, images, onDelete, onLike }) {
     return (
         <div>
             <img src={user.photoURL || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPuk1ANhAl5pGnajh1J2Jk83E0kVXsJtUy7Q&usqp=CAU"} width="2%" alt="User" onClick={openModal} style={{ cursor: 'pointer' }}/>
-            <Modal
-                isOpen={modalIsOpen}
-                onRequestClose={closeModal}
-                contentLabel="Profile Picture"
-            >
-                <img src={user.photoURL} alt="Profile" style={{ width: '100%', height: 'auto' }} />
-                <button onClick={() => fileInputRef.current.click()}>Change Image</button>
-                <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImageChange} />
-            </Modal>
+            <div>
+                <Modal
+                    isOpen={modalIsOpen}
+                    onRequestClose={closeModal}
+                    contentLabel="Profile Picture"
+                    dialogClassName = "profileChange"
+                >
+                    <img src={user.photoURL} alt="Profile" style={{ width: '100%', height: 'auto' }} />
+                    <button onClick={() => fileInputRef.current.click()}>Change Image</button>
+                    <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImageChange} />
+                </Modal>
+            </div>
             <button onClick={handleBack} className="back-button">Back</button>
             <h2>{user.displayName}'s Profile</h2>
             <div className="user-images">
