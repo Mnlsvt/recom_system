@@ -157,6 +157,8 @@ for n in (pred_attr):
 predictions = [[cell for cell in row if 'none' not in cell] for row in predictions if any('none' not in cell for cell in row)]
 predictions = [[cell for cell in row if '' not in cell] for row in predictions if any('' not in cell for cell in row)]
 
+print("Scene recognition:\n\n")
+
 if len(predictions) > 0:
     print(predictions[0],"\n")
 if len(predictions) > 1:
@@ -201,18 +203,23 @@ with open('object_recognition.py', 'r+') as object:
         object.writelines(content_object)  # Write the modified content back to the file
         object.truncate()
 
+print("\n\nObject recognition:\n\n")
+
 result_obj = subprocess.run(['python3', 'object_recognition.py'], stdout=subprocess.PIPE)
 object_rec_data = result_obj.stdout.decode('utf-8').strip()
 print(object_rec_data,"\n\n")
 object_rec_data = object_rec_data.split('\n')
-print(object_rec_data[8])
+'''print(object_rec_data[8])
 result_objects = object_rec_data[8]
 
 result_objectsList = ast.literal_eval(result_objects)
+
+#test
+print(result_objectsList)
 
 final_objectsList = []
 
 for item in result_objectsList:
     final_objectsList.append(item[0])
 
-print(final_objectsList)
+print(final_objectsList)'''

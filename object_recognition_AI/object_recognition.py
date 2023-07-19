@@ -54,20 +54,20 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 images = "azur.jpg"
 
 
-images_obj_path = '/home/mnlsvt/Desktop/ptuxiakh/test_images/' + images
+#images_obj_path = '/home/mnlsvt/Desktop/ptuxiakh/test_images/' + images
+images_obj_path = os.path.join(current_dir, '..', '..', 'test_images', '%s' %images)
 images_obj = Image.open(images_obj_path)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-# object_model_file = os.path.join(current_dir, '..', '..', 'models', 'fasterrcnn_resnet50_fpn_coco-258fb6c6.pth')
-object_model_file1 = '/home/mnlsvt/Desktop/ptuxiakh/models/fasterrcnn_resnet50_fpn_coco-258fb6c6.pth'
-object_model_file2 = '/home/mnlsvt/Desktop/ptuxiakh/models/maskrcnn_resnet50_fpn_coco-bf2d0c1e.pth'
+object_model_file1 = os.path.join(current_dir, '..', '..', 'models', 'fasterrcnn_resnet50_fpn_coco-258fb6c6.pth')
+object_model_file2 = os.path.join(current_dir, '..', '..', 'models', 'maskrcnn_resnet50_fpn_coco-bf2d0c1e.pth')
 
 # model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=False) # Do not download weights
-model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=None)
+model1 = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=None)
 
 #model.load_state_dict(torch.load(current_dir, '..', 'models', 'fasterrcnn_resnet50_fpn.pth'))
-model.load_state_dict(torch.load(object_model_file1))
-model.eval() # Make sure to call model.eval() to set dropout and batch normalization layers to evaluation mode
+model1.load_state_dict(torch.load(object_model_file1))
+model1.eval() # Make sure to call model.eval() to set dropout and batch normalization layers to evaluation mode
 
 # Load an image and convert it to a PyTorch tensor
 transform = T.Compose([T.ToTensor()])
@@ -75,16 +75,16 @@ images_obj_transformed = transform(images_obj)
 
 # Get predictions
 with torch.no_grad():
-    object_prediction1 = model([images_obj_transformed])
+    object_prediction1 = model1([images_obj_transformed])
 
 final_objects1 = identify_objects(object_prediction1)
 
 
 
 
-model = torchvision.models.detection.maskrcnn_resnet50_fpn(weights=None) # Do not download weights
-model.load_state_dict(torch.load(object_model_file2))
-model.eval() # Make sure to call model.eval() to set dropout and batch normalization layers to evaluation mode
+model2 = torchvision.models.detection.maskrcnn_resnet50_fpn(weights=None) # Do not download weights
+model2.load_state_dict(torch.load(object_model_file2))
+model2.eval() # Make sure to call model.eval() to set dropout and batch normalization layers to evaluation mode
 
 
 # Load an image
@@ -93,7 +93,7 @@ images_obj_transformed = transform(images_obj)
 
 # Perform prediction
 with torch.no_grad():
-    object_prediction2 = model([images_obj_transformed])
+    object_prediction2 = model2([images_obj_transformed])
 
 final_objects2 = identify_objects(object_prediction2)
 

@@ -7,7 +7,10 @@ from flask import jsonify
 import requests
 import ast
 
-cred = credentials.Certificate("../ptuxiakhmanwlhs-firebase-adminsdk-a3vdi-130cba8a2e.json")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+cred_path = os.path.join(script_dir, "../../ptuxiakhmanwlhs-firebase-adminsdk-a3vdi-130cba8a2e.json")
+
+cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred, {
     'storageBucket': 'ptuxiakhmanwlhs.appspot.com'
 })
@@ -282,4 +285,4 @@ def predict():
         "backgroundSpace": background_space
     })
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=80, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=True)
