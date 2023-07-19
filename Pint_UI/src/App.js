@@ -191,7 +191,7 @@ function Upload({ user }) {
         //    method: 'POST',
         //    body: formData
         //});
-        navigator.sendBeacon('https://metadata-gen-mguay.run-eu-central1.goorm.site/predict', formData);
+        navigator.sendBeacon('https://mnlsvt.pythonanywhere.com/predict/', formData);
 
         setIsLoading(false);
         setFile(null);

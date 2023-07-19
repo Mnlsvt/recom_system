@@ -7,6 +7,7 @@ from flask import jsonify
 import requests
 import ast
 
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
 cred_path = os.path.join(script_dir, "../../ptuxiakhmanwlhs-firebase-adminsdk.json")
 
@@ -50,7 +51,7 @@ def predict():
     
     url = doc.to_dict()['url']
     
-    destination = "/workspace/firstContainer/temp_img/"
+    destination = "temp_img/"
     destination += image_id
     destination += "."
     destination += extension
@@ -65,21 +66,6 @@ def predict():
     filename2 = filename
     filename2 += "."
     filename2 += extension
-    #blob.download_to_filename(filename)
-    
-#    temp = r"workspace/firstContainer/temp_img"
-#    temp += (blob.name())
-#    temp.append(extension)
-#    old = r"workspace/firstContainer/temp_img/"
-#    old.append(image_id)
-#    os.rename(old, temp)
-
-    # Replace 'images = "hair_salon.jpeg"' with 'images = "{filename}"'
-    # Similarly for the other scripts and rest of your script
-
-    # mycode:
-
-    # Code that runs resnet18, resnet50 and alexnet models and gets their outputs in a 3d array called predictions
 
     predictions = [[['' for k in range(3)] for j in range(3)] for i in range(4)]
 
@@ -270,19 +256,14 @@ def predict():
     # Get the document reference
     
     
-    # Create or update the document with the metadata
-    doc_ref.set({
-        'metadata': {
-            'attribute_predictions': attribute_predictions,
-            'backgroundSpace': background_space,
-            'objectsFound': result_objectsList
-        }
-    }, merge=True)
+    # Create a response with the necessary information.
+    response_data = {
+        'attribute_predictions': attribute_predictions,
+        'backgroundSpace': background_space,
+        'objectsFound': result_objectsList
+    }
     
-    # Return the results
-    return jsonify({
-        "attribute_predictions": attribute_predictions,
-        "backgroundSpace": background_space
-    })
+    return jsonify(response_data)
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
