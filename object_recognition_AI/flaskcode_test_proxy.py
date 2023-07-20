@@ -33,13 +33,14 @@ def download_file(url, destination):
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if 'file' not in request.files or 'image_id' not in request.form:
+    print(request.data)
+    if 'image_id' not in request.form:
         return 'No file or image_id provided', 400
 
     # Get the file and image_id from the request
-    file = request.files['file']
+#    file = request.files['file']
     image_id = request.form['image_id']
-
+    print(image_id)
     
     # Get the document from Firestore
     doc = db.collection(u'images').document(image_id).get()
@@ -62,7 +63,7 @@ def predict():
     bucket = storage.bucket()
     blob = bucket.blob(image_id)
     print(blob.name)
-    filename = os.path.join("/workspace/firstContainer/temp_img", blob.name)
+    filename = os.path.join("temp_img", blob.name)
     filename2 = filename
     filename2 += "."
     filename2 += extension
@@ -71,7 +72,7 @@ def predict():
 
     images = filename2
 
-    with open('/workspace/firstContainer/recom_system/unified_code.py', 'r+') as unifiedf:
+    with open('unified_code.py', 'r+') as unifiedf:
         content_unifiedf = unifiedf.readlines()
         for i, line in enumerate(content_unifiedf):
             if 'images =' in line:
@@ -88,7 +89,7 @@ def predict():
             arch = "resnet50"
         else:
             arch = "alexnet"
-        with open('/workspace/firstContainer/recom_system/basic_code.py', 'r+') as file:
+        with open('basic_code.py', 'r+') as file:
             content = file.readlines()
             for i, line in enumerate(content):
                 if 'arch =' in line:
@@ -102,7 +103,7 @@ def predict():
 
 
         # run basic_code.py and capture its output
-        result = subprocess.run(['python3', '/workspace/firstContainer/recom_system/basic_code.py'], stdout=subprocess.PIPE)
+        result = subprocess.run(['python3', 'basic_code.py'], stdout=subprocess.PIPE)
 
         # get the output of script1.py as input
         input_data = result.stdout.decode('utf-8').strip()
@@ -143,7 +144,7 @@ def predict():
     attribute_predictions = []
 
     # run basic_code.py and capture its output
-    result = subprocess.run(['python3', '/workspace/firstContainer/recom_system/unified_code.py'], stdout=subprocess.PIPE)
+    result = subprocess.run(['python3', 'unified_code.py'], stdout=subprocess.PIPE)
 
     # get the output of script1.py as input
     input_data = result.stdout.decode('utf-8').strip()
@@ -266,4 +267,4 @@ def predict():
     return jsonify(response_data)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000) #, debug=True)
