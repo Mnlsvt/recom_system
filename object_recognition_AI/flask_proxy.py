@@ -36,18 +36,28 @@ def predict():
    # Convert the attribute predictions to a list of strings
     attribute_predictions = [str(attr) for attr in response_data['attribute_predictions']]
 
+   # Convert the objectsFound to a list of strings
+    objectsFound = [str(attr) for attr in response_data['objectsFound']]
+
+   # Convert the objectsFound to a list of strings
+    objectsScore = [str(attr) for attr in response_data['objectsScore']]
+
     # Update the document with the metadata
     doc_ref.set({
         'metadata': {
             'attribute_predictions': attribute_predictions,
-            'backgroundSpace': response_data['backgroundSpace']
+            'backgroundSpace': response_data['backgroundSpace'],
+            'objectsFound': objectsFound,
+            'objectsScore': objectsScore
         }
     }, merge=True)
 
     # Return the response from the local server
     return jsonify({
         'attribute_predictions': attribute_predictions,
-        'backgroundSpace': response_data['backgroundSpace']
+        'backgroundSpace': response_data['backgroundSpace'],
+        'objectsFound': objectsFound,
+        'objectsScore': objectsScore
     })
 
 
