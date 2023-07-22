@@ -20,11 +20,21 @@ def identify_objects(object_prediction):
             score_tensor = item['scores']
     # Converting the tensor to a list
     labels_list = labels_tensor.tolist()
-    labels_list = list(set(labels_list))
     score_list = score_tensor.tolist()
-    # print(labels_list2)
+    #labels_list = list(set(labels_list))
+    labels_list_temp = []
+    score_list_temp = []
 
+    # removes duplicates from labels_list (the objects detected) and score_list (the percentage of certainty)
+    for i in range(len(labels_list)):
+        if labels_list[i] not in labels_list_temp:
+            labels_list_temp.append(labels_list[i])
+            score_list_temp.append(score_list[i])
+    
+    labels_list = labels_list_temp
+    score_list = score_list_temp
 
+    #print(object_prediction)
     label_dict = {}
 
     with open('object_classes.txt', 'r') as f:
@@ -33,25 +43,28 @@ def identify_objects(object_prediction):
             label_dict[int(items[0])] = items[1:] # convert the first item to integer and assign the rest as value
 
     final_objects = []
-    score_counter = 0
-    for item in labels_list:
-        score_counter += 1
-        for i in label_dict:
-            if ((i == item) and (score_list[score_counter] > 0.55)):
-                label_dict[i].append('%.3f'%score_list[score_counter])
-                # print(get_label_by_number(label_dict, i), '%.3f'%score_list[score_counter])  # Should print ['person', 'person', 'person', 'person']
-                final_objects.append(get_label_by_number(label_dict, i))
-    print(final_objects)
-    print(len(final_objects),"\n\n")
+    score_counter = -1
+    if labels_list != None:
+        for item in labels_list:
+            score_counter += 1
+            test = 0
+            for i in label_dict:
+                if ((i == item) and (score_list[score_counter] > 0.55)):
+                    label_dict[i].append('%.3f'%score_list[score_counter])
+                    # print(get_label_by_number(label_dict, i), '%.3f'%score_list[score_counter])  # Should print ['person', 'person', 'person', 'person']
+                    final_objects.append(get_label_by_number(label_dict, i))
+        print(final_objects)
+        print(len(final_objects),"\n\n")
 
-    return final_objects
-
+        return final_objects
+    else:
+        return None
 
 
 # Get the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-images = "temp_img/zM4hNQ7bsH07jJk6QqW6.jpg"
+images = "/home/mnlsvt/Desktop/1200px-A_black_image.jpg"
 
 
 #images_obj_path = '/home/mnlsvt/Desktop/ptuxiakh/test_images/' + images
