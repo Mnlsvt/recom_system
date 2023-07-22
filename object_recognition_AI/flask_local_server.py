@@ -244,13 +244,19 @@ def predict():
     result_objectsList = ast.literal_eval(result_objects)
 
     final_objectsList = []
+    final_objectsScore = []
 
+    # For the objects:
     for item in result_objectsList:
         final_objectsList.append(item[0])
 
     print(final_objectsList)
 
+    # And for their scores:
+    for item in result_objectsList:
+        final_objectsScore.append(item[2])
 
+    print(final_objectsScore)
 
     os.remove(filename2)
     
@@ -261,7 +267,8 @@ def predict():
     response_data = {
         'attribute_predictions': attribute_predictions,
         'backgroundSpace': background_space,
-        'objectsFound': result_objectsList
+        'objectsFound': final_objectsList,
+        'objectsScore': final_objectsScore
     }
     
     return jsonify(response_data)
