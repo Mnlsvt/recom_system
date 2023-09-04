@@ -255,7 +255,7 @@ function App() {
     }
 
 
-    useEffect(() => {
+/*    useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (user) {
                 setUser(user);
@@ -272,6 +272,49 @@ function App() {
 
 
         return () => unsubscribe();
+    }, []);*/
+    
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user) {
+                setUser(user);
+            } else {
+                setUser(null);
+            }
+        });
+    
+        let lastVisible = null;
+    
+        const fetchData = async () => {
+            if (!lastVisible) {
+                // Fetching the first 10 images initially
+                const query = db.collection("images").orderBy(firebase.firestore.FieldPath.documentId()).limit(10);
+                const data = await query.get();
+                setImages(data.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+                lastVisible = data.docs[data.docs.length - 1];
+            } else {
+                // Fetching the next 10 images
+                const query = db.collection("images").orderBy(firebase.firestore.FieldPath.documentId()).startAfter(lastVisible).limit(10);
+                const data = await query.get();
+                setImages(prevImages => [...prevImages, ...data.docs.map(doc => ({ ...doc.data(), id: doc.id }))]);
+                lastVisible = data.docs[data.docs.length - 1];
+            }
+        }
+    
+        const handleScroll = () => {
+            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight) {
+                fetchData();
+            }
+        }
+    
+        window.addEventListener('scroll', handleScroll);
+    
+        fetchData();
+    
+        return () => {
+            unsubscribe();
+            window.removeEventListener('scroll', handleScroll);
+        };
     }, []);
 
 
