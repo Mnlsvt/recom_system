@@ -10,7 +10,7 @@ from collections import defaultdict
 
 predictions = [[['' for k in range(3)] for j in range(3)] for i in range(4)]
 
-images = "../../../koapCtv1FQC1klDdgkCV.jpg"
+images = "../../test_images/street2.jpeg"
 
 with open('unified_code.py', 'r+') as unifiedf:
         content_unifiedf = unifiedf.readlines()
