@@ -64,7 +64,7 @@ def identify_objects(object_prediction):
 # Get the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-images = "../../test_images/street2.jpeg"
+images = "/home/mnlsvt/Desktop/ptuxiakhClassImages/movies/Multi_Label_dataset/Images/tt1438298.jpg"
 
 
 #images_obj_path = '/home/mnlsvt/Desktop/ptuxiakh/test_images/' + images
