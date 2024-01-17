@@ -1,4 +1,4 @@
-{
+[{
     "attribute_predictions": [
         "no horizon",
         "man-made",
@@ -31124,4 +31124,4 @@
         "ice_cream_parlor"
     ],
     "class": "food"
-}
+}]

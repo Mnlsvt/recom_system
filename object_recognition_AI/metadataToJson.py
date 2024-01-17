@@ -262,7 +262,7 @@ for filename in os.listdir(directory):
                 all_image_data.append(data_entry)
 
                 # Open the JSON file, append it with the new data, and close it
-                with open('all_image_metadata_sports.json', 'a') as outfile:
+                with open('all_image_metadata_sports2.json', 'a') as outfile:
                     json.dump(data_entry, outfile, indent=4)
                     outfile.write(',\n')  # Add a newline to separate JSON objects
 

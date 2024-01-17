@@ -1,4 +1,4 @@
-{
+[{
     "attribute_predictions": [
         "no horizon",
         "enclosed area",
@@ -128553,4 +128553,4 @@
         "tundra"
     ],
     "class": "pets"
-},
+}]

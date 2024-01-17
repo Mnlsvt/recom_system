@@ -1,4 +1,4 @@
-{
+[{
     "attribute_predictions": [
         "natural light",
         "open area",
@@ -5751,4 +5751,4 @@
         "locker_room"
     ],
     "class": "sports"
-},
+}]

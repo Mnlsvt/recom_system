@@ -1,4 +1,4 @@
-{
+[{
     "attribute_predictions": [
         "no horizon",
         "indoor lighting",
@@ -18584,4 +18584,4 @@
         "auto_showroom"
     ],
     "class": "gaming"
-}
+}]

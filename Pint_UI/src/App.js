@@ -15,14 +15,16 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 
 
 // Initialization of Firebase and Firestore
+require('dotenv').config();
+
 const firebaseConfig = {
-    apiKey: "AIzaSyDvKNc1V079WbA3B4CBHZAwqcxDcW8Cm7o",
-    authDomain: "ptuxiakhmanwlhs.firebaseapp.com",
-    projectId: "ptuxiakhmanwlhs",
-    storageBucket: "ptuxiakhmanwlhs.appspot.com",
-    messagingSenderId: "1086816491330",
-    appId: "1:1086816491330:web:c7c9278565c6d2b86c5adb",
-    measurementId: "G-K8S7N9DSZ7"
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID
 };
 firebase.initializeApp(firebaseConfig);
 //const auth = firebase.auth();
@@ -81,13 +83,13 @@ function Profile({ user, images, onDelete, onLike }) {
             const storageRef = ref(storage, 'profilePictures/' + user.uid);
             const uploadTask = uploadBytesResumable(storageRef, selectedImage);
 
-            uploadTask.on('state_changed', 
+            uploadTask.on('state_changed',
                 (snapshot) => {
                     // You can use this section to display upload progress
-                }, 
+                },
                 (error) => {
                     console.log(error);
-                }, 
+                },
                 () => {
                     getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                         user.updateProfile({
@@ -115,13 +117,13 @@ function Profile({ user, images, onDelete, onLike }) {
     const userImagesExists = userImages.filter(image => image.url); // Only images with url are included
     return (
         <div>
-            <img src={user.photoURL || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPuk1ANhAl5pGnajh1J2Jk83E0kVXsJtUy7Q&usqp=CAU"} width="2%" alt="User" onClick={openModal} style={{ cursor: 'pointer' }}/>
+            <img src={user.photoURL || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPuk1ANhAl5pGnajh1J2Jk83E0kVXsJtUy7Q&usqp=CAU"} width="2%" alt="User" onClick={openModal} style={{ cursor: 'pointer' }} />
             <div>
                 <Modal
                     isOpen={modalIsOpen}
                     onRequestClose={closeModal}
                     contentLabel="Profile Picture"
-                    dialogClassName = "profileChange"
+                    dialogClassName="profileChange"
                 >
                     <img src={user.photoURL} alt="Profile" style={{ width: '100%', height: 'auto' }} />
                     <button onClick={() => fileInputRef.current.click()}>Change Image</button>
@@ -151,9 +153,10 @@ function Profile({ user, images, onDelete, onLike }) {
 
 
 function Upload({ user }) {
-    const [file, setFile] = useState(null);
+    const [files, setFiles] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [recentImageUrls, setRecentImageUrls] = useState([]);
+    const [uploadProgress, setUploadProgress] = useState(0); // Added state for upload progress
     const navigate = useNavigate();
 
     const handleBack = () => {
@@ -161,48 +164,87 @@ function Upload({ user }) {
     }
 
     const handleUpload = async () => {
-        if (isLoading || !file) return;
+        if (isLoading || files.length === 0) return;
         setIsLoading(true);
 
-        const fileExtension = file.name.split('.').pop();
-
-        // Save the image data in Firestore, excluding the tags
-        const imageDoc = await db.collection('images').add({
-            uploaderId: user.uid,
-            likes: [],
-            extension: fileExtension  // Save the file extension in Firestore
-        });
-
         const storageRef = storage.ref();
-        const fileRef = storageRef.child(`${imageDoc.id}.${fileExtension}`);  // Append the extension to the file name
-        await fileRef.put(file);
-        const fileUrl = await fileRef.getDownloadURL();
-        setRecentImageUrls(prevUrls => [fileUrl, ...prevUrls]);
+        const formDataList = [];
 
-        await db.collection('images').doc(imageDoc.id).update({ url: fileUrl }); // Update the URL in the document
+        for (const file of files) {
+            const fileExtension = file.name.split('.').pop();
 
-        // Create a FormData object, append the file and the image id
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('image_id', imageDoc.id);
+            // Save the image data in Firestore, excluding the tags
+            const imageDoc = await db.collection('images').add({
+                uploaderId: user.uid,
+                likes: [],
+                extension: fileExtension, // Save the file extension in Firestore
+            });
 
-        // Make a POST request to the Python server
-        //await fetch('https://metadata-generator-ghqsm.run-eu-central1.goorm.site/predict', {
-        //    method: 'POST',
-        //    body: formData
-        //});
-        navigator.sendBeacon('https://mnlsvt.pythonanywhere.com/predict/', formData);
+            const fileRef = storageRef.child(`${imageDoc.id}.${fileExtension}`); // Append the extension to the file name
+            const uploadTask = fileRef.put(file);
+
+            // Listen to the progress event to track the upload progress
+            uploadTask.on('state_changed', (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress(progress);
+            });
+
+            await uploadTask;
+            const fileUrl = await fileRef.getDownloadURL();
+            setRecentImageUrls((prevUrls) => [fileUrl, ...prevUrls]);
+
+            await db.collection('images').doc(imageDoc.id).update({ url: fileUrl }); // Update the URL in the document
+
+            // Create a FormData object, append the file and the image id
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('image_id', imageDoc.id);
+            formDataList.push(formData);
+        }
+
+        // Make a POST request to the Python server for each image
+        for (const formData of formDataList) {
+            await fetch('https://mnlsvt.pythonanywhere.com/predict/', {
+                method: 'POST',
+                body: formData,
+            });
+        }
 
         setIsLoading(false);
-        setFile(null);
+        setFiles([]);
+        setUploadProgress(0); // Reset upload progress to 0 when done
     };
 
+    const handleFileChange = (e) => {
+        const selectedFiles = Array.from(e.target.files);
+        setFiles(selectedFiles);
+    };
 
     return (
         <div>
-            <button onClick={handleBack} className="back-button">Back</button>
-            <input type="file" onChange={e => setFile(e.target.files[0])} />
-            <button disabled={isLoading} onClick={handleUpload} className="upload-button">{isLoading ? 'Uploading...' : 'Upload'}</button>
+            <button onClick={handleBack} className="back-button">
+                Back
+            </button>
+            <input
+                type="file"
+                onChange={handleFileChange}
+                multiple // Allow multiple file selection
+            />
+            <button
+                disabled={isLoading}
+                onClick={handleUpload}
+                className="upload-button"
+            >
+                {isLoading ? 'Uploading...' : 'Upload'}
+            </button>
+            {isLoading && (
+                <div className="progress-bar">
+                    <div
+                        className="progress-bar-fill"
+                        style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                </div>
+            )}
             <div className="uploadImages">
                 {recentImageUrls.map((url, index) => (
                     <div key={index} className="image-item">
@@ -212,9 +254,8 @@ function Upload({ user }) {
             </div>
         </div>
     );
-
-
 }
+
 
 
 
@@ -230,50 +271,50 @@ function App() {
 
     const SignUpWithEmailPassword = (email, password, username) => {
         auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            // user successfully created, now set the username
-            return userCredential.user.updateProfile({
-                displayName: username
+            .then((userCredential) => {
+                // user successfully created, now set the username
+                return userCredential.user.updateProfile({
+                    displayName: username
+                })
+                    .then(() => {
+                        // Get the current user again after profile update
+                        const user = firebase.auth().currentUser;
+                        setUser(user);
+                    });
             })
-            .then(() => {
-                // Get the current user again after profile update
-                const user = firebase.auth().currentUser;
-                setUser(user);
+            .catch((error) => {
+                // Handle Errors here.
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                if (errorCode === 'auth/wrong-password') {
+                    alert('Wrong password.');
+                } else {
+                    alert(errorMessage);
+                }
+                console.error(error);
             });
-        })
-        .catch((error) => {
-            // Handle Errors here.
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            if (errorCode === 'auth/wrong-password') {
-                alert('Wrong password.');
-            } else {
-                alert(errorMessage);
-            }
-            console.error(error);
-        });
     }
 
 
-/*    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            if (user) {
-                setUser(user);
-            } else {
-                setUser(null);
-            }
-        });
-
-        const fetchData = async () => {
-            const data = await db.collection("images").get();
-            setImages(data.docs.map(doc => ({ ...doc.data(), id: doc.id })));
-        }
-        fetchData();
-
-
-        return () => unsubscribe();
-    }, []);*/
+    /*    useEffect(() => {
+            const unsubscribe = auth.onAuthStateChanged((user) => {
+                if (user) {
+                    setUser(user);
+                } else {
+                    setUser(null);
+                }
+            });
     
+            const fetchData = async () => {
+                const data = await db.collection("images").get();
+                setImages(data.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+            }
+            fetchData();
+    
+    
+            return () => unsubscribe();
+        }, []);*/
+
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (user) {
@@ -282,9 +323,9 @@ function App() {
                 setUser(null);
             }
         });
-    
+
         let lastVisible = null;
-    
+
         const fetchData = async () => {
             if (!lastVisible) {
                 // Fetching the first 10 images initially
@@ -300,17 +341,17 @@ function App() {
                 lastVisible = data.docs[data.docs.length - 1];
             }
         }
-    
+
         const handleScroll = () => {
             if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight) {
                 fetchData();
             }
         }
-    
+
         window.addEventListener('scroll', handleScroll);
-    
+
         fetchData();
-    
+
         return () => {
             unsubscribe();
             window.removeEventListener('scroll', handleScroll);
@@ -442,7 +483,7 @@ function App() {
                         ) : (
                             <div className="login-form">
                                 <h2>Sign In</h2>
-                                <button className="googleButton" onClick={SignInWithGoogle}><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD8xsK5yP1KzYaT9lOO7krEtEuQX_soBEq0g&usqp=CAU" alt="googleIcon" width="100%"/></button>
+                                <button className="googleButton" onClick={SignInWithGoogle}><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD8xsK5yP1KzYaT9lOO7krEtEuQX_soBEq0g&usqp=CAU" alt="googleIcon" width="100%" /></button>
                                 <form onSubmit={(e) => {
                                     e.preventDefault();
                                     SignInWithEmailPassword(e.target.email.value, e.target.password.value);

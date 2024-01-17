@@ -1,4 +1,4 @@
-{
+[{
     "attribute_predictions": [
         "open area",
         "natural light",
@@ -62744,4 +62744,4 @@
         "beach_house"
     ],
     "class": "nature"
-},
+}]

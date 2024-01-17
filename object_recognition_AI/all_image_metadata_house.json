@@ -1,4 +1,4 @@
-{
+[{
     "attribute_predictions": [
         "open area",
         "natural light",
@@ -36052,4 +36052,4 @@
         "garage/outdoor"
     ],
     "class": "house"
-}
+}]

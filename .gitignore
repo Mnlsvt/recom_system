@@ -13,3 +13,5 @@ Pint_UI/.env
 Pint_UI/npm-debug.log*
 Pint_UI/yarn-debug.log*
 Pint_UI/yarn-error.log*
+
+.env

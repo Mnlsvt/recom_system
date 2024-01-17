@@ -250,6 +250,22 @@
     cursor: pointer;
 }
 
+.progress-bar {
+    width: 100%;
+    height: 10px; /* Adjust the height as needed */
+    background-color: #f0f0f0; /* Background color of the progress bar container */
+    border-radius: 5px; /* Rounded corners for the progress bar container */
+    margin-top: 10px; /* Add spacing if needed */
+  }
+  
+  .progress-bar-fill {
+    height: 100%;
+    width: 0; /* Initial width, will be updated dynamically */
+    background-color: #007bff; /* Fill color of the progress bar */
+    border-radius: 5px; /* Rounded corners for the fill */
+    transition: width 0.3s ease; /* Animation for the progress fill */
+  }
+
 .back-button:hover,
 .upload-button:hover {
     background-color: #0b77dd;
