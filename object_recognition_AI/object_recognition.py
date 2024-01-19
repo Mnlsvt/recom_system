@@ -54,7 +54,7 @@ def identify_objects(object_prediction):
                     # print(get_label_by_number(label_dict, i), '%.3f'%score_list[score_counter])  # Should print ['person', 'person', 'person', 'person']
                     final_objects.append(get_label_by_number(label_dict, i))
         print(final_objects)
-        print(len(final_objects),"\n\n")
+        #print(len(final_objects),"\n\n")
 
         return final_objects
     else:
@@ -64,7 +64,7 @@ def identify_objects(object_prediction):
 # Get the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-images = "/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/sports/sports/2478cdc6-b880-4456-b31e-2d05291e04d8.jpg"
+images = "/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/sports/sports/06302ab7-2446-4563-82bb-7e7b4b567c09.jpg"
 
 
 #images_obj_path = '/home/mnlsvt/Desktop/ptuxiakh/test_images/' + images

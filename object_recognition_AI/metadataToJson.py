@@ -5,6 +5,7 @@ import os
 import ast
 import json
 import numpy as np
+import ast
 
 # Function to determine if a file is an image
 def is_image_file(filename):
@@ -16,6 +17,24 @@ def is_image_file(filename):
 # Function to extract class name from directory name
 def extract_class_name(image_path):
     return os.path.basename(os.path.dirname(image_path))
+
+def parse_objects_found(data):
+    parsed_data = []
+    for element in data:
+        try:
+            # Parse the string as a list
+            parsed_element = ast.literal_eval(element)
+            if isinstance(parsed_element, list):
+                # Extend the main list with elements of the parsed list
+                parsed_data.extend(parsed_element)
+            else:
+                # Directly append non-list elements
+                parsed_data.append(element)
+        except (ValueError, SyntaxError) as e:
+            print("Error parsing element:", element, "Error:", e)
+            # Append the original element if it can't be parsed
+            parsed_data.append(element)
+    return parsed_data
 
 # Directory containing images
 directory = input("what is the path of the images?\n")
@@ -249,12 +268,14 @@ for filename in os.listdir(directory):
                 # Extract class name from directory
                 class_name = extract_class_name(images)
 
+                parsed_data = parse_objects_found(object_rec_data)
+
                 # Combine metadata and class name into a single entry
                 data_entry = {
                     "attribute_predictions": attribute_predictions,
                     "objectsScore": [cell[1] for row in predictions for cell in row],
-                    "backgroundSpace": [],  # Populate this if you have the data
-                    "objectsFound": [cell[2] for row in predictions for cell in row],
+                    "backgroundSpace": [cell[2] for row in predictions for cell in row],  # Populate this if you have the data
+                    "objectsFound": parsed_data,
                     "class": class_name
                 }
 
@@ -262,7 +283,7 @@ for filename in os.listdir(directory):
                 all_image_data.append(data_entry)
 
                 # Open the JSON file, append it with the new data, and close it
-                with open('all_image_metadata_sports2.json', 'a') as outfile:
+                with open('all_image_metadata_test.json', 'a') as outfile:
                     json.dump(data_entry, outfile, indent=4)
                     outfile.write(',\n')  # Add a newline to separate JSON objects
 

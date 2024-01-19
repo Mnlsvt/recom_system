@@ -23,7 +23,7 @@ def predict():
     form_data = request.form
 
     # Forward the request to the local server
-    local_server_url = "http://mnlsvtserver.ddns.net:5000/predict"  # Replace with your local server URL
+    local_server_url = "http://manolisvt.com:5000/predict"  # Replace with your local server URL
     response = requests.post(local_server_url, data=form_data, timeout=120)
 
     # Parse the response from the local server

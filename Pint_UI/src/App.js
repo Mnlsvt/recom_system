@@ -13,9 +13,8 @@ import Modal from 'react-modal';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 
-
 // Initialization of Firebase and Firestore
-require('dotenv').config();
+/*require('dotenv').config();
 
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
@@ -25,9 +24,19 @@ const firebaseConfig = {
     messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.FIREBASE_APP_ID,
     measurementId: process.env.FIREBASE_MEASUREMENT_ID
+};*/
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDvKNc1V079WbA3B4CBHZAwqcxDcW8Cm7o",
+    authDomain: "ptuxiakhmanwlhs.firebaseapp.com",
+    projectId: "ptuxiakhmanwlhs",
+    storageBucket: "ptuxiakhmanwlhs.appspot.com",
+    messagingSenderId: "1086816491330",
+    appId: "1:1086816491330:web:c7c9278565c6d2b86c5adb",
+    measurementId: "G-K8S7N9DSZ7"
 };
 firebase.initializeApp(firebaseConfig);
-//const auth = firebase.auth();
+//const auth = firebase.auth();S
 const db = firebase.firestore();
 const storage = firebase.storage();
 
@@ -204,7 +213,7 @@ function Upload({ user }) {
 
         // Make a POST request to the Python server for each image
         for (const formData of formDataList) {
-            await fetch('https://mnlsvt.pythonanywhere.com/predict/', {
+            await fetch('MnLsVt.pythonanywhere.com/predict', {
                 method: 'POST',
                 body: formData,
             });
