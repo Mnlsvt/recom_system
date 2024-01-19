@@ -64,7 +64,7 @@ def identify_objects(object_prediction):
 # Get the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-images = "/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/sports/sports/3238ebfb-bf2c-44a6-af84-3e66e2e16ebb.jpg"
+images = "/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/food/61317ef3-81f6-404f-b905-9df346cbf8c0.jpg"
 
 
 #images_obj_path = '/home/mnlsvt/Desktop/ptuxiakh/test_images/' + images
@@ -124,3 +124,4 @@ for sublist in objects_count:
 
 duplicate_objects_count = list(unique_objects_count_dict.values())
 print(duplicate_objects_count)
+

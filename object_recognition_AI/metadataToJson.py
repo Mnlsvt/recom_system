@@ -69,16 +69,20 @@ for filename in os.listdir(directory):
                 arch = "resnet50"
             else:
                 arch = "alexnet"
-            with open('basic_code.py', 'r+') as file:
+            with open('basic_code.py', 'r') as file:
                 content = file.readlines()
-                for i, line in enumerate(content):
-                    if 'arch =' in line:
-                        content[i] = 'arch = "{}"\n'.format(arch)  # Modify the line with the new value
-                    elif 'images =' in line:
-                        content[i] = 'images = "{}"\n'.format(images)  # Modify the line with the new value
-                        break  # Stop searching for the line once found
-                file.seek(0)  # Go back to the beginning of the file
-                file.writelines(content)  # Write the modified content back to the file
+
+            # Modify the content as needed
+            for i, line in enumerate(content):
+                if 'arch =' in line:
+                    content[i] = f'arch = "{arch}"\n'
+                elif 'images =' in line:
+                    content[i] = f'images = "{images}"\n'
+                    break
+
+            # Overwrite the file with the modified content
+            with open('basic_code.py', 'w') as file:
+                file.writelines(content)
 
             # Image preprocessing
             transform = T.Compose([
