@@ -28,6 +28,6 @@ def move_and_rename_items_to_target(parent_dir, target_dir):
 
 
 # Usage example:
-parent_dir = '/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/sports/train'
-target_dir = '/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/sports/sports'
+parent_dir = '/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/Dataset'
+target_dir = '/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/gaming'
 move_and_rename_items_to_target(parent_dir, target_dir)

@@ -50,7 +50,7 @@ def identify_objects(object_prediction):
             test = 0
             for i in label_dict:
                 if ((i == item) and (score_list[score_counter] > 0.55)):
-                    label_dict[i].append('%.3f'%score_list[score_counter])
+                    #label_dict[i].append('%.3f'%score_list[score_counter])
                     # print(get_label_by_number(label_dict, i), '%.3f'%score_list[score_counter])  # Should print ['person', 'person', 'person', 'person']
                     final_objects.append(get_label_by_number(label_dict, i))
         print(final_objects)
@@ -64,7 +64,7 @@ def identify_objects(object_prediction):
 # Get the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-images = "/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/sports/sports/06302ab7-2446-4563-82bb-7e7b4b567c09.jpg"
+images = "/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/sports/sports/3238ebfb-bf2c-44a6-af84-3e66e2e16ebb.jpg"
 
 
 #images_obj_path = '/home/mnlsvt/Desktop/ptuxiakh/test_images/' + images
@@ -119,7 +119,7 @@ for sublist in objects_count:
     counts[sublist[0]] += 1
 
 for sublist in objects_count:
-    if counts[sublist[0]] > 1 and (sublist[0] not in unique_objects_count_dict or sublist[2] > unique_objects_count_dict[sublist[0]][2]):
+    if counts[sublist[0]] > 1 and (sublist[0] not in unique_objects_count_dict): # or sublist[2] > unique_objects_count_dict[sublist[0]][2]):
         unique_objects_count_dict[sublist[0]] = sublist
 
 duplicate_objects_count = list(unique_objects_count_dict.values())
