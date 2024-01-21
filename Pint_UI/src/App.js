@@ -213,10 +213,11 @@ function Upload({ user }) {
 
         // Make a POST request to the Python server for each image
         for (const formData of formDataList) {
-            await fetch('https://MnLsVt.pythonanywhere.com/predict', {
+            /*await fetch('https://MnLsVt.pythonanywhere.com/', {
                 method: 'POST',
                 body: formData,
-            });
+            });*/
+            navigator.sendBeacon('https://MnLsVt.pythonanywhere.com/', formData);
         }
 
         setIsLoading(false);
