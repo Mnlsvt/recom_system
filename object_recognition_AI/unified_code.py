@@ -14,7 +14,7 @@ from PIL import Image
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-images = "/home/mnlsvt/Desktop/ptuxiakh/class_model_train_images/downloads/sports/sports/89f9a361-9db5-40a2-803b-3b1209027850.jpg"
+images = "/home/mnlsvt/Desktop/ptuxiakhClassImages/movies/Multi_Label_dataset/movies/tt1792647.jpg"
 
  # hacky way to deal with the Pytorch 1.0 update
 def recursion_change_bn(module):
