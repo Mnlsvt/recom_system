@@ -15,3 +15,6 @@ Pint_UI/yarn-debug.log*
 Pint_UI/yarn-error.log*
 
 .env
+
+/object_recognition_AI/imageMetadataJSONs/preprocessed_data_for_tensorflow.json
+/object_recognition_AI/imageMetadataJSONs/preprocessed_data_old.json
