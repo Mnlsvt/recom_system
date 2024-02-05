@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-cred_path = os.path.join(script_dir, "../../../ptuxiakhmanwlhs-firebase-adminsdk.json")
+cred_path = os.path.join(script_dir, "../../ptuxiakhmanwlhs-firebase-adminsdk.json")
 
 cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred, {
@@ -256,27 +256,40 @@ def predict():
 
     result = subprocess.run(['python3', 'object_recognition.py'], stdout=subprocess.PIPE)
     object_rec_data = result.stdout.decode('utf-8').strip()
-    # print(object_rec_data)
+    print(object_rec_data)
     object_rec_data = object_rec_data.split('\n')
-    print(object_rec_data[8])
-    result_objects = object_rec_data[8]
+    #print(object_rec_data[8])
+    #result_objects = object_rec_data[8]
 
-    result_objectsList = ast.literal_eval(result_objects)
+    # Function to convert string representations to lists
+    def convert_to_list(str_representation):
+        return ast.literal_eval(str_representation)
 
-    final_objectsList = []
-    final_objectsScore = []
+    # Function to extract object names
+    def extract_object_names(data):
+        object_names = set()
+        for item in data:
+            # Convert the string representation to list
+            list_representation = convert_to_list(item)
+            # Extract the object names
+            for obj in list_representation:
+                object_names.add(obj[0])  # Assuming the object name is the first element
+        return object_names
+    
+    # Extract object names
+    extracted_objects = extract_object_names(object_rec_data)
+
+    #result_objectsList = ast.literal_eval(result_objects)
+    final_objectsList = list(extracted_objects)
+
+    #final_objectsList = []
+    #final_objectsScore = []
 
     # For the objects:
-    for item in result_objectsList:
-        final_objectsList.append(item[0])
+    #for item in result_objectsList:
+    #    final_objectsList.append(item[0])
 
     print(final_objectsList)
-
-    # And for their scores:
-    for item in result_objectsList:
-        final_objectsScore.append(item[2])
-
-    print(final_objectsScore)
 
     os.remove(filename2)
     
@@ -299,7 +312,6 @@ def predict():
         'attribute_predictions': attribute_predictions,
         'backgroundSpace': background_space,
         'objectsFound': final_objectsList,
-        'objectsScore': final_objectsScore,
         'predicted_class': predicted_class_name  # Include the predicted class
     }
 
