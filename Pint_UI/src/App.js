@@ -217,7 +217,7 @@ function Upload({ user }) {
                 method: 'POST',
                 body: formData,
             });*/
-            navigator.sendBeacon('https://MnLsVt.pythonanywhere.com/proxy/', formData);
+            navigator.sendBeacon('https://MnLsVt.pythonanywhere.com/', formData);
         }
 
         setIsLoading(false);

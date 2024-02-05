@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-cred_path = os.path.join(script_dir, "../../ptuxiakhmanwlhs-firebase-adminsdk.json")
+cred_path = os.path.join(script_dir, "../../../ptuxiakhmanwlhs-firebase-adminsdk.json")
 
 cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred, {
@@ -22,10 +22,10 @@ db = firestore.client()
 app = Flask(__name__)
 
 # Load saved model, vectorizer, and encoder for class prediction
-model = tf.keras.models.load_model('classModel.keras')
-vectorizer = joblib.load('vectorizer.pkl')
-encoder = joblib.load('encoder.pkl')
-label_encoder = joblib.load('label_encoder.pkl')
+model = tf.keras.models.load_model(os.path.join(script_dir,'classModel.keras'))
+vectorizer = joblib.load(os.path.join(script_dir,'vectorizer.pkl'))
+encoder = joblib.load(os.path.join(script_dir,'encoder.pkl'))
+label_encoder = joblib.load(os.path.join(script_dir,'label_encoder.pkl'))
 
 def download_file(url, destination):
     response = requests.get(url)
