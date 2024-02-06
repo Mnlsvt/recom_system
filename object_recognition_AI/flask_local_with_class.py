@@ -342,6 +342,7 @@ import numpy as np
 import os
 import requests
 import ast
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1' # Disable GPU
 import tensorflow as tf
 import joblib
 import pandas as pd
