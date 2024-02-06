@@ -321,7 +321,14 @@ def predict():
         return jsonify(response_data)
     except ValueError as e:
         if 'Found unknown categories' in str(e):
-            updated_encoder = OneHotEncoder(handle_unknown='ignore')
+            # updated_encoder = OneHotEncoder(handle_unknown='ignore')
+            response_data = {
+            'attribute_predictions': attribute_predictions,
+            'backgroundSpace': background_space,
+            'objectsFound': final_objectsList,
+            'predicted_class': "0"  # Include the predicted class
+        }
+            return jsonify(response_data)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
