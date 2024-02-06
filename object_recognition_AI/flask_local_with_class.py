@@ -352,6 +352,16 @@ import firebase_admin
 import subprocess
 from sklearn.preprocessing import OneHotEncoder
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+cred_path = os.path.join(script_dir, "../../ptuxiakhmanwlhs-firebase-adminsdk.json")
+
+cred = credentials.Certificate(cred_path)
+firebase_admin.initialize_app(cred, {
+    'storageBucket': 'ptuxiakhmanwlhs.appspot.com'
+})
+
+db = firestore.client()
+
 app = Flask(__name__)
 
 # Celery configuration
