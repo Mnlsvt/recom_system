@@ -17,7 +17,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # the architecture to use
 arch = "alexnet"
-images = "temp_img/OITO9yaAf3PI4lUZNAIb.photo-1554080353-a576cf803bda"
+images = "temp_img/wh9dFuWx2sHQXisdeVLz.png"
 
 # load the pre-trained weights
 model_file = os.path.join(current_dir, '..', '..', 'models', '%s_places365.pth.tar' %arch)
@@ -70,6 +70,7 @@ print('{} prediction on {}'.format(arch,img_name))
 for i in range(0, 3):
     print('{:.3f} -> {}'.format(probs[i], classes[idx[i]]))
 ('{:.3f} -> {}'.format(probs[i], classes[idx[i]]))
+
 
 
 

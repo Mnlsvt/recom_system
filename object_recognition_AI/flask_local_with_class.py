@@ -1,13 +1,14 @@
+import numpy as np
 from firebase_admin import storage, firestore, credentials
 from flask import Flask, request, jsonify
 import os
+os.environ["MKL_THREADING_LAYER"] = "GNU"
 import subprocess
 import firebase_admin
 import requests
 import ast
 import tensorflow as tf
 import joblib
-import numpy as np
 import pandas as pd
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -130,7 +131,7 @@ def predict():
 
         # do something with the input data
         #predictions = [['',''],['',''],['','']]
-
+        print("\n\n\n",input_data)
         for i in range(3):
             pred_lines = input_data.split('\n')[i+1]
             # find the accuracy of each possible prediction
