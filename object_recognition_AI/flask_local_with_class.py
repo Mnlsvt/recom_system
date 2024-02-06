@@ -10,6 +10,7 @@ import ast
 import tensorflow as tf
 import joblib
 import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 cred_path = os.path.join(script_dir, "../../ptuxiakhmanwlhs-firebase-adminsdk.json")
@@ -304,19 +305,23 @@ def predict():
     }
 
     # Process input and make prediction
-    input_features = preprocess_input(input_data_for_tf_model, vectorizer, encoder)
-    predicted_class = make_prediction(input_features)
-    predicted_class_name = label_encoder.inverse_transform(predicted_class)[0]
+    try:
+        input_features = preprocess_input(input_data_for_tf_model, vectorizer, encoder)
+        predicted_class = make_prediction(input_features)
+        predicted_class_name = label_encoder.inverse_transform(predicted_class)[0]
 
-    # Create a response with the necessary information
-    response_data = {
-        'attribute_predictions': attribute_predictions,
-        'backgroundSpace': background_space,
-        'objectsFound': final_objectsList,
-        'predicted_class': predicted_class_name  # Include the predicted class
-    }
+        # Create a response with the necessary information
+        response_data = {
+            'attribute_predictions': attribute_predictions,
+            'backgroundSpace': background_space,
+            'objectsFound': final_objectsList,
+            'predicted_class': predicted_class_name  # Include the predicted class
+        }
 
-    return jsonify(response_data)
+        return jsonify(response_data)
+    except ValueError as e:
+        if 'Found unknown categories' in str(e):
+            updated_encoder = OneHotEncoder(handle_unknown='ignore')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
