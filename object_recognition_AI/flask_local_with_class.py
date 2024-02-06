@@ -404,7 +404,7 @@ def make_prediction(input_features):
     predicted_class = np.argmax(prediction, axis=1)
     return predicted_class
 
-@celery.task
+@celery.task(name='flask_local_with_class.process_image_task')
 def process_image_task(image_id):
     doc = db.collection(u'images').document(image_id).get()
     
