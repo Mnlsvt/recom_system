@@ -381,6 +381,7 @@ vectorizer = joblib.load(os.path.join(script_dir, 'vectorizer.pkl'))
 encoder = joblib.load(os.path.join(script_dir, 'encoder.pkl'))
 label_encoder = joblib.load(os.path.join(script_dir, 'label_encoder.pkl'))
 
+@celery.task(name='flask_local_with_class.process_image_task')
 def download_file(url, destination):
     response = requests.get(url)
     if response.status_code == 200:
@@ -405,7 +406,7 @@ def make_prediction(input_features):
     predicted_class = np.argmax(prediction, axis=1)
     return predicted_class
 
-@celery.task(name='flask_local_with_class.process_image_task')
+#@celery.task(name='flask_local_with_class.process_image_task')
 def process_image_task(image_id):
     doc = db.collection(u'images').document(image_id).get()
     
