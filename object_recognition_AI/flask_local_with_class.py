@@ -651,7 +651,6 @@ def process_image_task(image_id):
         predicted_class = make_prediction(input_features)
         predicted_class_name = label_encoder.inverse_transform(predicted_class)[0]
 
-        # Create a response with the necessary information
         response_data = {
             'attribute_predictions': attribute_predictions,
             'backgroundSpace': background_space,
@@ -659,19 +658,17 @@ def process_image_task(image_id):
             'predicted_class': predicted_class_name  # Include the predicted class
         }
 
-        #return jsonify(response_data)
-        return response_data
     except ValueError as e:
         if 'Found unknown categories' in str(e):
-            # updated_encoder = OneHotEncoder(handle_unknown='ignore')
             response_data = {
-            'attribute_predictions': attribute_predictions,
-            'backgroundSpace': background_space,
-            'objectsFound': final_objectsList,
-            'predicted_class': "0"  # Include the predicted class
-        }
-            #return jsonify(response_data)
-            return response_data
+                'attribute_predictions': attribute_predictions,
+                'backgroundSpace': background_space,
+                'objectsFound': final_objectsList,
+                'predicted_class': "0"  # Include the predicted class
+            }
+
+    # Return the response data so that it can be accessed when the task is complete
+    return response_data
 
 @app.route('/predict', methods=['POST'])
 def predict():
