@@ -357,7 +357,7 @@ from sklearn.preprocessing import OneHotEncoder
 # Flask and Celery configuration
 app = Flask(__name__)
 app.config['CELERY_BROKER_URL'] = 'pyamqp://guest@localhost//'  # RabbitMQ
-app.config['CELERY_RESULT_BACKEND'] = 'rpc://'
+app.config['result_backend'] = 'rpc://'
 
 def make_celery(app):
     celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'],
