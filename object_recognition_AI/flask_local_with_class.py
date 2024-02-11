@@ -343,7 +343,7 @@ import os
 import requests
 import ast
 import numpy as np
-#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import tensorflow as tf
 import joblib
 import pandas as pd
