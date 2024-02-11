@@ -659,7 +659,6 @@ def process_image_task(image_id):
             'objectsFound': final_objectsList,
             'predicted_class': predicted_class_name  # Include the predicted class
         }
-        doc_ref.update({'prediction_data': response_data})
 
         return jsonify(response_data)
     except ValueError as e:
@@ -671,7 +670,6 @@ def process_image_task(image_id):
             'objectsFound': final_objectsList,
             'predicted_class': "0"  # Include the predicted class
         }
-            doc_ref.update({'prediction_data': response_data})
             return jsonify(response_data)
 
 @app.route('/predict', methods=['POST'])
