@@ -338,11 +338,11 @@ if __name__ == "__main__":
 '''
 
 
-import numpy as np
+# Import statements
 import os
 import requests
 import ast
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1' # Disable GPU
+import numpy as np
 import tensorflow as tf
 import joblib
 import pandas as pd
@@ -353,13 +353,11 @@ import firebase_admin
 import subprocess
 from sklearn.preprocessing import OneHotEncoder
 
+# Flask and Celery configuration
 app = Flask(__name__)
-
-# Celery configuration
 app.config['CELERY_BROKER_URL'] = 'pyamqp://guest@localhost//'  # RabbitMQ
 app.config['CELERY_RESULT_BACKEND'] = 'rpc://'
 
-# Initialize Celery
 def make_celery(app):
     celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'],
                     broker=app.config['CELERY_BROKER_URL'])
@@ -368,12 +366,11 @@ def make_celery(app):
 
 celery = make_celery(app)
 
+# Firebase and model initialization
 script_dir = os.path.dirname(os.path.abspath(__file__))
 cred_path = os.path.join(script_dir, "../../ptuxiakhmanwlhs-firebase-adminsdk.json")
-
 cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred, {'storageBucket': 'ptuxiakhmanwlhs.appspot.com'})
-
 db = firestore.client()
 
 model = tf.keras.models.load_model(os.path.join(script_dir, 'classModel.keras'))
@@ -381,7 +378,7 @@ vectorizer = joblib.load(os.path.join(script_dir, 'vectorizer.pkl'))
 encoder = joblib.load(os.path.join(script_dir, 'encoder.pkl'))
 label_encoder = joblib.load(os.path.join(script_dir, 'label_encoder.pkl'))
 
-@celery.task(name='flask_local_with_class.process_image_task')
+
 def download_file(url, destination):
     response = requests.get(url)
     if response.status_code == 200:
@@ -406,7 +403,7 @@ def make_prediction(input_features):
     predicted_class = np.argmax(prediction, axis=1)
     return predicted_class
 
-#@celery.task(name='flask_local_with_class.process_image_task')
+@celery.task(name='flask_local_with_class.process_image_task')
 def process_image_task(image_id):
     doc = db.collection(u'images').document(image_id).get()
     
@@ -661,7 +658,8 @@ def process_image_task(image_id):
             'predicted_class': predicted_class_name  # Include the predicted class
         }
 
-        return jsonify(response_data)
+        #return jsonify(response_data)
+        return response_data
     except ValueError as e:
         if 'Found unknown categories' in str(e):
             # updated_encoder = OneHotEncoder(handle_unknown='ignore')
@@ -671,7 +669,8 @@ def process_image_task(image_id):
             'objectsFound': final_objectsList,
             'predicted_class': "0"  # Include the predicted class
         }
-            return jsonify(response_data)
+            #return jsonify(response_data)
+            return response_data
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -685,7 +684,28 @@ def predict():
 @app.route('/status/<task_id>')
 def task_status(task_id):
     task = process_image_task.AsyncResult(task_id)
-    return jsonify({'status': task.status, 'result': task.result})
+    if task.state == 'PENDING':
+        response = {
+            'state': task.state,
+            'status': 'Pending...'
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+            'result': task.result,
+            'status': task.status
+        }
+        if task.state == 'SUCCESS':
+            # Here you can handle the successful task result,
+            # e.g., insert the result into the database if needed.
+            pass
+    else:
+        # something went wrong in the background job
+        response = {
+            'state': task.state,
+            'status': str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
