@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 
 # Load saved model, vectorizer, and encoder
-model = tf.keras.models.load_model('classModel.keras')
-vectorizer = joblib.load('vectorizer.pkl')
-encoder = joblib.load('encoder.pkl')
-label_encoder = joblib.load('label_encoder.pkl')
+model = tf.keras.models.load_model('../classModel.keras')
+vectorizer = joblib.load('../vectorizer.pkl')
+encoder = joblib.load('../encoder.pkl')
+label_encoder = joblib.load('../label_encoder.pkl')
 
 def preprocess_input(input_data, vectorizer, encoder):
     df = pd.DataFrame([input_data])

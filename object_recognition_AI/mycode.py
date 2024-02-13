@@ -1,10 +1,28 @@
 import subprocess
 from PIL import Image
+import tensorflow as tf
 import torchvision.transforms as T
 import os
 import ast
 from collections import defaultdict
 
+
+def configure_gpu():
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            # Restrict TensorFlow to only allocate a fraction of the total memory
+            # Replace 0.5 with the fraction of memory to allocate
+            tf.config.experimental.set_memory_growth(gpus[0], True)
+            tf.config.experimental.set_virtual_device_configuration(
+                gpus[0],
+                [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=512 * 1)])  # Set limit here
+        except RuntimeError as e:
+            print(e)
+
+
+# Configure GPU to use memory growth
+configure_gpu()
 
 # Code that runs resnet18, resnet50 and alexnet models and gets their outputs in a 3d array called predictions
 
@@ -50,7 +68,8 @@ for k in range(3):
 
     # do something with the input data
     #predictions = [['',''],['',''],['','']]
-
+    print("\n\n\ninputdata",input_data)
+    print("\n\n\npredictions",predictions)
     for i in range(3):
         pred_lines = input_data.split('\n')[i+1]
         # find the accuracy of each possible prediction
@@ -77,6 +96,7 @@ for k in range(3):
         #print(pred_acc, pred1)
 #print(predictions)
 
+print("\n\n\n",predictions)
 
 '''
 predictions is a 3d array in which the values are assigned like this:
