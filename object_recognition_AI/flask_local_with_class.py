@@ -1,3 +1,6 @@
+# Start with:
+# celery -A flask_local_with_class.celery worker --pool=threads --loglevel=info & python flask_local_with_class.py
+
 # Import statements
 import torch
 from torch.autograd import Variable as V
@@ -9,7 +12,7 @@ import os
 import requests
 import ast
 import numpy as np
-#os.environ['CUDA_VISIBLE_DEVICES'] = ''
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import tensorflow as tf
 import joblib
 import pandas as pd
@@ -25,6 +28,7 @@ import torchvision
 from PIL import Image
 import torchvision.transforms as T
 from collections import defaultdict
+import time
 
 # Flask and Celery configuration
 app = Flask(__name__)
@@ -34,8 +38,7 @@ app.config['result_backend'] = 'rpc://'
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def make_celery(app):
-    celery = Celery(app.import_name, backend=app.config['result_backend'],
-                    broker=app.config['CELERY_BROKER_URL'])
+    celery = Celery(app.import_name, backend='redis://localhost', broker='pyamqp://')
     celery.conf.update(app.config)
     return celery
 
@@ -51,16 +54,13 @@ db = firestore.client()
 # Initialize the model and utilities at the start of the script or within a function
 def initialize_model():
     global model, vectorizer, encoder, label_encoder
-    print("skata4")
     model = tf.keras.models.load_model('classModel.keras')
-    print("skata5")
     vectorizer = joblib.load('vectorizer.pkl')
-    print("skata6")
     encoder = joblib.load('encoder.pkl')
-    print("skata7")
     label_encoder = joblib.load('label_encoder.pkl')
 
 initialize_model()
+
 
 def configure_gpu():
     # List and set up TensorFlow to use available GPUs
@@ -88,7 +88,6 @@ def download_file(url, destination):
         print("Failed to download the file.")
 
 def preprocess_input(input_data, vectorizer, encoder):
-    print("skata10")
     df = pd.DataFrame([input_data])
     df['attribute_predictions_str'] = df['attribute_predictions'].apply(lambda x: ' '.join(x))
     df['objectsFound_str'] = df['objectsFound'].apply(lambda x: ' '.join([' '.join(pair) for pair in x]))
@@ -96,17 +95,12 @@ def preprocess_input(input_data, vectorizer, encoder):
     attributes_vec = vectorizer.transform(df['attribute_predictions_str']).toarray()
     objects_vec = vectorizer.transform(df['objectsFound_str']).toarray()
     background_vec = encoder.transform(df[['backgroundSpace_str']]).toarray()
-    print("skata11")
     return np.hstack((attributes_vec, objects_vec, background_vec))
 
 def make_prediction(input_features):
-    print("skata12")
     input_features = preprocess_input(input_features, vectorizer, encoder)
-    print("skata13")
     prediction = model.predict(input_features)
-    print("skata14")
     predicted_class = np.argmax(prediction, axis=1)
-    print("skata15")
     return predicted_class
 
 def process_unified_code(image_path, arch):
@@ -195,9 +189,10 @@ def classification_process(test_input):
     predicted_class = make_prediction(test_input)
     predicted_class_name = label_encoder.inverse_transform(predicted_class)[0]
     print("Predicted Class:", predicted_class_name)
+    return predicted_class_name
 
 
-@celery.task(name='flask_local_with_class.process_image_task')
+@celery.task(name='flask_local_with_class.process_image_task', ignore_result=False)
 def process_image_task(image_id):
     # Configure GPU to use memory growth
     configure_gpu()
@@ -393,16 +388,13 @@ def process_image_task(image_id):
     print("Classification process starting...")
     # Process input and make prediction
     try:
-        print('skata')
         class_result = classification_process(input_data_for_tf_model)
-        print('skata2')
         response_data = {
             'attribute_predictions': attribute_predictions,
             'backgroundSpace': background_space,
             'objectsFound': list(final_objectsList),
             'predicted_class': class_result  # Include the predicted class
         }
-        print('skata3')
 
     except ValueError as e:
         if 'Found unknown categories' in str(e):
@@ -413,6 +405,7 @@ def process_image_task(image_id):
                 'predicted_class': "0"  # Default class in case of error
             }
 
+    print("responsedata", response_data)
     # Return the response data so that it can be accessed when the task is complete
     return response_data
 
@@ -423,8 +416,15 @@ def predict():
 
     image_id = request.form['image_id']
     task = process_image_task.delay(image_id)
-    return jsonify({'task_id': task.id}), 202
+    while not task.ready():
+        time.sleep(1)
+    
+    print(task.get())
 
+
+    return jsonify(task.get()), 202
+
+'''
 @app.route('/status/<task_id>')
 def task_status(task_id):
     task = process_image_task.AsyncResult(task_id)
@@ -450,6 +450,7 @@ def task_status(task_id):
             'status': str(task.info),  # this is the exception raised
         }
     return jsonify(response)
-
+'''
+    
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
