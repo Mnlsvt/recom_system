@@ -206,7 +206,7 @@ def process_image_task(image_id):
     
     url = doc.to_dict()['url']
     
-    destination = "temp_img/"
+    destination = "../../temp_img/"
     destination += image_id
     destination += "."
     destination += extension
@@ -217,7 +217,7 @@ def process_image_task(image_id):
     bucket = storage.bucket()
     blob = bucket.blob(image_id)
     print(blob.name)
-    filename = os.path.join("temp_img", blob.name)
+    filename = os.path.join("../../temp_img", blob.name)
     filename2 = filename
     filename2 += "."
     filename2 += extension

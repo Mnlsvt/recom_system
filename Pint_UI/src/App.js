@@ -339,7 +339,7 @@ function App() {
         const fetchData = async () => {
             if (!lastVisible) {
                 // Fetching the first 10 images initially
-                const query = db.collection("images").orderBy(firebase.firestore.FieldPath.documentId()).limit(10);
+                const query = db.collection("images").orderBy(firebase.firestore.FieldPath.documentId());//.limit(10);
                 const data = await query.get();
                 setImages(data.docs.map(doc => ({ ...doc.data(), id: doc.id })));
                 lastVisible = data.docs[data.docs.length - 1];
@@ -352,6 +352,8 @@ function App() {
             }
         }
 
+        // Previous Scrolling Functionality
+        /*
         const handleScroll = () => {
             if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight) {
                 fetchData();
@@ -359,12 +361,12 @@ function App() {
         }
 
         window.addEventListener('scroll', handleScroll);
-
+        */
         fetchData();
 
         return () => {
             unsubscribe();
-            window.removeEventListener('scroll', handleScroll);
+            //window.removeEventListener('scroll', handleScroll);
         };
     }, []);
 
