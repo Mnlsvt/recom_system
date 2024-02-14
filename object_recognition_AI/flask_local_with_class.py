@@ -1,5 +1,5 @@
 # Start with:
-# celery -A flask_local_with_class.celery worker --pool=threads --loglevel=info & python flask_local_with_class.py
+# celery -A flask_local_with_class.celery worker --pool=threads --loglevel=info --concurrency=1 & python flask_local_with_class.py
 
 # Import statements
 import torch
@@ -192,7 +192,7 @@ def classification_process(test_input):
     return predicted_class_name
 
 
-@celery.task(name='flask_local_with_class.process_image_task', ignore_result=False)
+@celery.task(name='flask_local_with_class.process_image_task', ignore_result=False, soft_time_limit=30, time_limit=60, rate_limit='3/m')
 def process_image_task(image_id):
     # Configure GPU to use memory growth
     configure_gpu()
@@ -390,6 +390,7 @@ def process_image_task(image_id):
     try:
         class_result = classification_process(input_data_for_tf_model)
         response_data = {
+            'image_id': image_id,
             'attribute_predictions': attribute_predictions,
             'backgroundSpace': background_space,
             'objectsFound': list(final_objectsList),
@@ -399,6 +400,7 @@ def process_image_task(image_id):
     except ValueError as e:
         if 'Found unknown categories' in str(e):
             response_data = {
+                'image_id': image_id,
                 'attribute_predictions': attribute_predictions,
                 'backgroundSpace': processed_attributes,
                 'objectsFound': list(final_objectsList),
@@ -407,22 +409,28 @@ def process_image_task(image_id):
 
     print("responsedata", response_data)
     # Return the response data so that it can be accessed when the task is complete
-    return response_data
+    #return response_data
+
+    proxy_url = "https://MnLsVt.pythonanywhere.com/update_data"  # Replace with your proxy URL
+
+
+    # Send the data to the proxy
+    try:
+        requests.post(proxy_url, json=response_data)
+        print("metadata sent")
+    except Exception as e:
+        print("error sending the metadata")
 
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'image_id' not in request.form:
-        return 'No image_id provided', 400
+        return jsonify({"error": "No image_id provided"}), 400
 
     image_id = request.form['image_id']
     task = process_image_task.delay(image_id)
-    while not task.ready():
-        time.sleep(1)
-    
-    print(task.get())
 
-
-    return jsonify(task.get()), 202
+    # Return a response with the task ID
+    return jsonify({"task_id": task.id}), 202
 
 '''
 @app.route('/status/<task_id>')
