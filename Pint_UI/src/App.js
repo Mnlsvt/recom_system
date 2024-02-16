@@ -227,55 +227,70 @@ function Upload({ user }) {
     const handleUpload = async () => {
         if (isLoading || files.length === 0) return;
         setIsLoading(true);
-
+    
         const storageRef = storage.ref();
-        const formDataList = [];
-
+    
         for (const file of files) {
             const fileExtension = file.name.split('.').pop();
-
-            // Save the image data in Firestore, excluding the tags
             const imageDoc = await db.collection('images').add({
                 uploaderId: user.uid,
                 likes: [],
-                extension: fileExtension, // Save the file extension in Firestore
+                extension: fileExtension,
             });
-
-            const fileRef = storageRef.child(`${imageDoc.id}.${fileExtension}`); // Append the extension to the file name
+    
+            const fileRef = storageRef.child(`${imageDoc.id}.${fileExtension}`);
             const uploadTask = fileRef.put(file);
-
-            // Listen to the progress event to track the upload progress
+    
             uploadTask.on('state_changed', (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 setUploadProgress(progress);
             });
+    
+            try {
+                await uploadTask;
+                const fileUrl = await fileRef.getDownloadURL();
+                setRecentImageUrls((prevUrls) => [fileUrl, ...prevUrls]);
+                await db.collection('images').doc(imageDoc.id).update({ url: fileUrl });
+    
+                // As soon as the image is uploaded and the URL is received, send it to the /predict endpoint
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('image_id', imageDoc.id);
+                
+                // Here, instead of using `sendBeacon`, which is typically for analytics and 
+                // does not handle responses, we use fetch to await the response
+                /*const predictResponse = await fetch('https://MnLsVt.pythonanywhere.com/predict', {
+                    method: 'POST',
+                    body: formData,
+                });*/
 
-            await uploadTask;
-            const fileUrl = await fileRef.getDownloadURL();
-            setRecentImageUrls((prevUrls) => [fileUrl, ...prevUrls]);
-
-            await db.collection('images').doc(imageDoc.id).update({ url: fileUrl }); // Update the URL in the document
-
-            // Create a FormData object, append the file and the image id
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('image_id', imageDoc.id);
-            formDataList.push(formData);
+                //for (const formData of formDataList) {
+                    /*await fetch('https://MnLsVt.pythonanywhere.com/', {
+                        method: 'POST',
+                        body: formData,
+                    });*/
+                    navigator.sendBeacon('https://MnLsVt.pythonanywhere.com/', formData);
+                //}
+    
+                /*if(predictResponse.ok) {
+                    const predictionResult = await predictResponse.json();
+                    // Handle the prediction result here
+                    // For example, update Firestore document with the prediction result
+                } else {
+                    // Handle errors
+                    console.error('Error from predict endpoint', predictResponse.statusText);
+                }*/
+            } catch (error) {
+                console.error('Error uploading file', error);
+                // Handle any errors during the upload or prediction call
+            }
         }
-
-        // Make a POST request to the Python server for each image
-        for (const formData of formDataList) {
-            /*await fetch('https://MnLsVt.pythonanywhere.com/', {
-                method: 'POST',
-                body: formData,
-            });*/
-            navigator.sendBeacon('https://MnLsVt.pythonanywhere.com/', formData);
-        }
-
+    
         setIsLoading(false);
         setFiles([]);
         setUploadProgress(0); // Reset upload progress to 0 when done
     };
+    
 
     const handleFileChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
