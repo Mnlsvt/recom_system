@@ -404,7 +404,7 @@ def process_image_task(image_id):
                 'attribute_predictions': attribute_predictions,
                 'backgroundSpace': processed_attributes,
                 'objectsFound': list(final_objectsList),
-                'predicted_class': "0"  # Default class in case of error
+                'predicted_class': "unknown"  # Default class in case of error
             }
 
     print("responsedata", response_data)

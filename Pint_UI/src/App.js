@@ -10,6 +10,9 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import Modal from 'react-modal';
 
+// importing functions 
+import { handleLike, updateUserPreferences } from './functions/user_classification/user_preferences';
+
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 
@@ -42,10 +45,59 @@ const storage = firebase.storage();
 
 
 
-function SignInWithGoogle() {
+/*function SignInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider);
-}
+}*/
+
+const handleGoogleSignIn = () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    auth.signInWithPopup(provider).then(async (result) => {
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        const token = result.credential.accessToken;
+        // The signed-in user info.
+        const user = result.user;
+
+        // Check if the user document exists in Firestore
+        const userRef = db.collection('users').doc(user.uid);
+        const doc = await userRef.get();
+
+        // If the user document does not exist, create it
+        if (!doc.exists) {
+            userRef.set({
+                displayName: user.displayName,
+                email: user.email,
+                preferences: {
+                    cars: 0,
+                    fitness: 0,
+                    food: 0,
+                    gaming: 0,
+                    houses: 0,
+                    movies: 0,
+                    nature: 0,
+                    pets: 0,
+                    sports: 0,
+                    unknown: 0
+                } // Initialize preferences as an empty object
+                // ... any other initial fields you want to include
+            }).then(() => {
+                console.log("User document successfully created!");
+            }).catch((error) => {
+                console.error("Error creating user document", error);
+            });
+        } else {
+            console.log("User document already exists");
+        }
+
+        // Update UI accordingly or navigate to the profile page
+        // ...
+    }).catch((error) => {
+        // Handle errors here, such as no internet connection or the popup was closed
+        console.error("Error during Google Sign-In", error);
+    });
+};
+
 
 function SignInWithEmailPassword(email, password) {
     auth.signInWithEmailAndPassword(email, password);
@@ -282,11 +334,28 @@ function App() {
     const SignUpWithEmailPassword = (email, password, username) => {
         auth.createUserWithEmailAndPassword(email, password)
             .then((userCredential) => {
-                // user successfully created, now set the username
-                return userCredential.user.updateProfile({
+                // User successfully created, now set the username
+                userCredential.user.updateProfile({
                     displayName: username
-                })
-                    .then(() => {
+                }).then(() => {
+                    // Create a user document in Firestore
+                    return db.collection('users').doc(userCredential.user.uid).set({
+                        email,
+                        displayName: username,
+                        preferences: {
+                            cars: 0,
+                            fitness: 0,
+                            food: 0,
+                            gaming: 0,
+                            houses: 0,
+                            movies: 0,
+                            nature: 0,
+                            pets: 0,
+                            sports: 0,
+                            unknown: 0
+                        } // Initialize preferences as an empty object
+                    });
+                }).then(() => {
                         // Get the current user again after profile update
                         const user = firebase.auth().currentUser;
                         setUser(user);
@@ -371,30 +440,6 @@ function App() {
     }, []);
 
 
-    const handleLike = async (id) => {
-        const docRef = db.collection('images').doc(id);
-        const doc = await docRef.get();
-        const likes = doc.data().likes || [];
-
-        if (likes.includes(user.uid)) {
-            await docRef.update({ likes: firebase.firestore.FieldValue.arrayRemove(user.uid) });
-        } else {
-            await docRef.update({ likes: firebase.firestore.FieldValue.arrayUnion(user.uid) });
-        }
-
-        setImages((prevImages) =>
-            prevImages.map((image) =>
-                image.id === id ? { ...image, likes: likes.includes(user.uid) ? likes.filter(uid => uid !== user.uid) : [...likes, user.uid] } : image
-            )
-        );
-
-        setSelectedImage((prevSelectedImage) =>
-            prevSelectedImage && prevSelectedImage.id === id
-                ? { ...prevSelectedImage, likes: likes.includes(user.uid) ? likes.filter(uid => uid !== user.uid) : [...likes, user.uid] }
-                : prevSelectedImage
-        );
-    };
-
     const handleDelete = async (id, url) => {
         const docRef = db.collection('images').doc(id);
         await docRef.delete();
@@ -406,10 +451,10 @@ function App() {
     };
 
 
-    const handleDoubleLike = (id) => {
+    const handleDoubleLike = (id, user, db, setImages, setSelectedImage) => {
         const selectedLikes = selectedImage.likes || [];
         if (!selectedLikes.includes(user.uid)) {
-            handleLike(id);
+            handleLike(id, user, db, setImages, setSelectedImage);
             setShowHeart(true);
             setTimeout(() => setShowHeart(false), 1000);
         }
@@ -460,7 +505,7 @@ function App() {
                                     <div key={image.id} className="image-item" onClick={() => handleSelect(image)}>
                                         <img src={image.url} alt="" />
                                         <div className="image-item-info">
-                                            <button onClick={(e) => { e.stopPropagation(); handleLike(image.id); }}>
+                                            <button onClick={(e) => { e.stopPropagation(); handleLike(image.id, user, db, setImages, setSelectedImage); }}>
                                                 {image.likes && image.likes.includes(user.uid) ? "❤️" : "🤍"}
                                             </button>
                                         </div>
@@ -482,7 +527,7 @@ function App() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleLike(selectedImage.id);
+                                                        handleLike(selectedImage.id, user, db, setImages, setSelectedImage);
                                                     }}
                                                 >
                                                     {selectedImage.likes && selectedImage.likes.includes(user.uid) ? "❤️" : "🤍"}
@@ -495,7 +540,7 @@ function App() {
                         ) : (
                             <div className="login-form">
                                 <h2>Sign In</h2>
-                                <button className="googleButton" onClick={SignInWithGoogle}><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD8xsK5yP1KzYaT9lOO7krEtEuQX_soBEq0g&usqp=CAU" alt="googleIcon" width="100%" /></button>
+                                <button className="googleButton" onClick={handleGoogleSignIn}><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD8xsK5yP1KzYaT9lOO7krEtEuQX_soBEq0g&usqp=CAU" alt="googleIcon" width="100%" /></button>
                                 <form onSubmit={(e) => {
                                     e.preventDefault();
                                     SignInWithEmailPassword(e.target.email.value, e.target.password.value);
