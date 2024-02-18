@@ -232,11 +232,9 @@ function Upload({ user }) {
         if (isLoading || files.length === 0) return;
         setIsLoading(true);
     
-        const storageRef = storage.ref();
-    
-        for (const file of files) {
+        const uploadTasks = files.map(async (file) => {
             // Resize the image before uploading
-            resizeImage(file, 800, 600, async (resizedBlob) => {
+            await resizeImage(file, 800, 600, async (resizedBlob) => {
                 const fileExtension = file.name.split('.').pop();
                 const imageDoc = await db.collection('images').add({
                     uploaderId: user.uid,
@@ -244,38 +242,40 @@ function Upload({ user }) {
                     extension: fileExtension,
                 });
     
-                const fileRef = storageRef.child(`${imageDoc.id}.${fileExtension}`);
+                const fileRef = storage.ref().child(`${imageDoc.id}.${fileExtension}`);
                 const uploadTask = fileRef.put(resizedBlob);
     
                 uploadTask.on('state_changed', (snapshot) => {
                     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    setUploadProgress(progress);
+                    console.log('Upload progress:', progress); // Debugging log
+                    // Here, you need to update progress for this specific file
                 });
     
-                try {
-                    await uploadTask;
-                    const fileUrl = await fileRef.getDownloadURL();
-                    setRecentImageUrls((prevUrls) => [fileUrl, ...prevUrls]);
-                    await db.collection('images').doc(imageDoc.id).update({ url: fileUrl });
+                await uploadTask;
+                const fileUrl = await fileRef.getDownloadURL();
+                setRecentImageUrls((prevUrls) => [fileUrl, ...prevUrls]);
+                await db.collection('images').doc(imageDoc.id).update({ url: fileUrl });
     
-                    // As soon as the image is uploaded and the URL is received, send it to the /predict endpoint
-                    const formData = new FormData();
-                    formData.append('file', resizedBlob); // Use the resized blob
-                    formData.append('image_id', imageDoc.id);
+                // As soon as the image is uploaded and the URL is received, send it to the /predict endpoint
+                const formData = new FormData();
+                formData.append('file', resizedBlob); // Use the resized blob
+                formData.append('image_id', imageDoc.id);
     
-                    // Send the formData using sendBeacon or fetch, based on your requirement
-                    navigator.sendBeacon('https://MnLsVt.pythonanywhere.com/', formData);
-    
-                } catch (error) {
-                    console.error('Error uploading file', error);
-                }
+                // Send the formData using sendBeacon or fetch, based on your requirement
+                navigator.sendBeacon('https://MnLsVt.pythonanywhere.com/', formData);
             });
-        }
+        });
+    
+        // Wait for all upload tasks to complete
+        await Promise.all(uploadTasks);
     
         setIsLoading(false);
         setFiles([]);
-        setUploadProgress(0); // Reset upload progress to 0 when done
+        // Reset upload progress for all files
+        // You might need a different approach if you want to show individual progress
+        setUploadProgress(0); 
     };
+    
     
     
 
