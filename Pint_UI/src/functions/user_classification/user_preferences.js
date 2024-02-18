@@ -48,7 +48,7 @@ if (likes.includes(user.uid)) {
 
 
 // User preferences
-export const updateUserPreferences = async (userId, imageClass, action, db) => {
+const updateUserPreferences = async (userId, imageClass, action, db) => {
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
 

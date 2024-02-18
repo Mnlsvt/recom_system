@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
@@ -10,9 +10,12 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import Modal from 'react-modal';
 
+import _, { isEmpty } from 'lodash';
+
 // importing functions 
 import { handleLike, updateUserPreferences } from './functions/user_classification/user_preferences';
-import { resizeImage } from './functions/user_classification/image_resizer';
+import { resizeImage } from './functions/image_resizer';
+import { fetchImagesForUser } from './functions/user_classification/user_image_recommendation';
 
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
@@ -328,8 +331,10 @@ function App() {
     const [user, setUser] = useState(null);
     const [showHeart, setShowHeart] = useState(false);
 
+    const [lastImageDoc, setLastImageDoc] = useState(null);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-
+    
     const SignUpWithEmailPassword = (email, password, username) => {
         auth.createUserWithEmailAndPassword(email, password)
             .then((userCredential) => {
@@ -373,70 +378,59 @@ function App() {
             });
     }
 
+        const [fetchedImageIds, setFetchedImageIds] = useState(new Set());
 
-    /*    useEffect(() => {
-            const unsubscribe = auth.onAuthStateChanged((user) => {
-                if (user) {
-                    setUser(user);
-                } else {
-                    setUser(null);
+
+        // Function to fetch initial images
+        const fetchInitialImages = async () => {
+            if (!user) return;
+            const { images: initialImages, lastDoc } = await fetchImagesForUser(user.uid, db, null, 10, fetchedImageIds);
+            initialImages.forEach(image => fetchedImageIds.add(image.id));
+            setFetchedImageIds(new Set(fetchedImageIds));
+            setImages(initialImages);
+            setLastImageDoc(lastDoc);
+        };
+
+        // Scroll handler
+        const handleScroll = useCallback(_.throttle(async () => {
+            const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100;
+            if (nearBottom && !isLoadingMore && lastImageDoc && user) {
+                setIsLoadingMore(true);
+                const { images: newImages, lastDoc } = await fetchImagesForUser(user.uid, db, lastImageDoc, 10, fetchedImageIds);
+                
+                // Update fetched IDs and filter out duplicates before setting state
+                const updatedFetchedIds = new Set(fetchedImageIds);
+                const filteredNewImages = newImages.filter(image => {
+                    const isDuplicate = updatedFetchedIds.has(image.id);
+                    if (!isDuplicate) updatedFetchedIds.add(image.id);
+                    return !isDuplicate;
+                });
+        
+                setFetchedImageIds(updatedFetchedIds);
+                setImages(prevImages => [...prevImages, ...filteredNewImages]);
+                setLastImageDoc(lastDoc);
+                setIsLoadingMore(false);
+            }
+        }, 1000), [isLoadingMore, lastImageDoc, user, db, fetchedImageIds]);
+
+        // Effect for setting up the scroll listener and initial image fetch
+        useEffect(() => {
+            const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+                setUser(currentUser);
+                if (currentUser && fetchedImageIds.size === 0) {
+                    await fetchInitialImages();
                 }
             });
-    
-            const fetchData = async () => {
-                const data = await db.collection("images").get();
-                setImages(data.docs.map(doc => ({ ...doc.data(), id: doc.id })));
-            }
-            fetchData();
-    
-    
-            return () => unsubscribe();
-        }, []);*/
 
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            if (user) {
-                setUser(user);
-            } else {
-                setUser(null);
-            }
-        });
+            window.addEventListener('scroll', handleScroll);
 
-        let lastVisible = null;
-
-        const fetchData = async () => {
-            if (!lastVisible) {
-                // Fetching the first 10 images initially
-                const query = db.collection("images").orderBy(firebase.firestore.FieldPath.documentId());//.limit(10);
-                const data = await query.get();
-                setImages(data.docs.map(doc => ({ ...doc.data(), id: doc.id })));
-                lastVisible = data.docs[data.docs.length - 1];
-            } else {
-                // Fetching the next 10 images
-                const query = db.collection("images").orderBy(firebase.firestore.FieldPath.documentId()).startAfter(lastVisible).limit(10);
-                const data = await query.get();
-                setImages(prevImages => [...prevImages, ...data.docs.map(doc => ({ ...doc.data(), id: doc.id }))]);
-                lastVisible = data.docs[data.docs.length - 1];
-            }
-        }
-
-        // Previous Scrolling Functionality
-        /*
-        const handleScroll = () => {
-            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight) {
-                fetchData();
-            }
-        }
-
-        window.addEventListener('scroll', handleScroll);
-        */
-        fetchData();
-
-        return () => {
-            unsubscribe();
-            //window.removeEventListener('scroll', handleScroll);
-        };
-    }, []);
+            return () => {
+                unsubscribe();
+                window.removeEventListener('scroll', handleScroll);
+                handleScroll.cancel();
+            };
+        }, [user, handleScroll]);
+        
 
 
     const handleDelete = async (id, url) => {

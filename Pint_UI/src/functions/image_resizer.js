@@ -1,14 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import '../../App.css';
+import '../App.css';
 
-import { auth } from '../../firebaseAuth';
-import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
-import Modal from 'react-modal';
 
 
 export function resizeImage(file, maxWidth, maxHeight, callback) {
