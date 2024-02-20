@@ -75,7 +75,7 @@ def process_image_task(image_id):
 
     gptText = '''Give me the metadata of this image. The format is {'image_id': '', 'attribute_predictions': [], 'backgroundSpace': [], 'objectsFound': [], 'predicted_class': ''}
     
-    where 'image_id' is the name of the image without the extension, 'attribute_predictions' is a list of of 1-2 word strings with information about how the predection happened 
+    where 'image_id' is the name of the image without the extension (add gpt at the end so it will be 'id-gpt'), 'attribute_predictions' is a list of of 1-2 word strings with information about how the predection happened 
     (e.g. natural-light etc), 'backgroundSpace' is a strings that tells what is the bg of the image (e.g. coffee shop), 'objectsFound' is a list of the detected objects, and 'predicted_class' is a the final classification.
     Classify the image in one of these classes: cars, fitness, food, gaming, houses, movies, nature, pets, sports, unknown.
     
