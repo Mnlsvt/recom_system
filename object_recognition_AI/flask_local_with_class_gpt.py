@@ -100,7 +100,7 @@ def process_image_task_gpt(image_id):
 
     url = doc.to_dict()['url']
 
-    gptText = '''Give me the metadata of this image. The format is {'image_id': '%s', 'attribute_predictions': [], 'backgroundSpace': [], 'objectsFound': [], 'predicted_class': ''}
+    gptText = '''Give me the metadata of this image. The format is {'image_id': '%s', 'attribute_predictions': [], 'backgroundSpace': [], 'objectsFound': [], 'predicted_class': '', 'gpt': '%s'}
     
     where 'image_id' is the id of the image, 'attribute_predictions' is a list of of 1-2 word strings with information about how the predection happened 
     (e.g. natural-light etc), 'backgroundSpace' is a list of strings that tells what is the bg of the image (e.g. coffee shop), 'objectsFound' is a list of the detected objects, and 'predicted_class' is a the final classification.
@@ -111,7 +111,7 @@ def process_image_task_gpt(image_id):
     
 
 
-    gptText = gptText % (image_id)
+    gptText = gptText % (image_id, "yes")
 
     print(url)
 

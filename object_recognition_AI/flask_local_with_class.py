@@ -394,7 +394,8 @@ def process_image_task(image_id):
             'attribute_predictions': attribute_predictions,
             'backgroundSpace': background_space,
             'objectsFound': list(final_objectsList),
-            'predicted_class': class_result  # Include the predicted class
+            'predicted_class': class_result,  # Include the predicted class,
+            'gpt': 'no'
         }
 
     except ValueError as e:
@@ -404,7 +405,8 @@ def process_image_task(image_id):
                 'attribute_predictions': attribute_predictions,
                 'backgroundSpace': processed_attributes,
                 'objectsFound': list(final_objectsList),
-                'predicted_class': "unknown"  # Default class in case of error
+                'predicted_class': 'unknown',  # Default class in case of error
+                'gpt': 'no'
             }
 
     print("responsedata", response_data)
