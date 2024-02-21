@@ -28,6 +28,7 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
 
     let lastDoc = startAfter;
     let images = [];
+    let currentFetchedIds = [];
 
     // Fetch images based on top categories with different weights
     for (let i = 0; i < 3; i++) {
@@ -44,9 +45,10 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
         console.log(`Fetching ${categoryImagesToFetch} images from category: ${category}`);
 
         snapshot.forEach((doc) => {
-            if (!fetchedIds.has(doc.id)) {
+            if (!fetchedIds.has(doc.id)) { //&& !images.some(img => img.id === doc.id)) {
                 images.push({ ...doc.data(), id: doc.id });
                 lastDoc = doc; // Update lastDoc with the current document
+                currentFetchedIds.push(doc.id);
             } else {
                 console.log('Duplicate image skipped:', doc.id);
             }
@@ -57,7 +59,7 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
     console.log('Fetched image IDs:', images.map(img => img.id));
 
     // Fetch the rest of the images without category preference
-    const randomImagesToFetch = totalImagesToFetch - images.length;
+    let randomImagesToFetch = totalImagesToFetch - images.length;
 
     if (randomImagesToFetch > 0) {
         let query = db.collection('images').orderBy('metadata.timestamp');
@@ -69,10 +71,12 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
         query = query.limit(randomImagesToFetch);
         const snapshot = await query.get();
 
-        snapshot.forEach((doc) => {
-            if (!fetchedIds.has(doc.id)) {
+        snapshot.forEach(async (doc) => {
+            if (!fetchedIds.has(doc.id) && !currentFetchedIds.includes(doc.id)) {
                 images.push({ ...doc.data(), id: doc.id });
                 lastDoc = doc;
+            } else {
+                console.log('Skipped image:', doc.id);
             }
         });
 
