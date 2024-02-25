@@ -18,8 +18,107 @@ const fetchUserPreferences = async (userId, db) => {
     }
 };
 
+export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFetch, fetchedIds) => {
+    const PREFERENCE_RATIO = 0.7; // 70% images based on preferences
+    const WEIGHTS = [0.5, 0.3, 0.2]; // Weights for top 3 categories
+    const preferences = await fetchUserPreferences(userId, db);
+    const sortedPreferences = Object.entries(preferences).sort((a, b) => b[1] - a[1]);
+
+    let lastDoc = startAfter;
+    let images = [];
+    let currentFetchedIds = new Set(fetchedIds);
+
+    // Initial allocation with Math.floor
+    for (let i = 0; i < 3; i++) {
+        const [category, _] = sortedPreferences[i];
+        let categoryImagesToFetch = totalImagesToFetch * PREFERENCE_RATIO * WEIGHTS[i];
+        if (categoryImagesToFetch) {
+            const decimalPart = categoryImagesToFetch % 1;
+            if (decimalPart >= 0.5) {
+                categoryImagesToFetch = Math.ceil(categoryImagesToFetch);
+            } else {
+                categoryImagesToFetch = Math.floor(categoryImagesToFetch);
+            }
+        }
+        let query = db.collection('images').where('metadata.predicted_class', '==', category);
+        if (lastDoc) {
+            query = query.startAfter(lastDoc);
+        }
+        query = query.limit(categoryImagesToFetch);
+
+        const snapshot = await query.get();
+        console.log(`Fetching ${categoryImagesToFetch} images from category: ${category}`);
+
+        snapshot.forEach((doc) => {
+            if (!currentFetchedIds.has(doc.id)) {
+                images.push({ ...doc.data(), id: doc.id });
+                lastDoc = doc;
+                currentFetchedIds.add(doc.id);
+            }
+        });
+    }
+
+    // Calculate shortfall
+    let preferenceImagesFetched = images.length;
+    let preferenceShortfall = Math.ceil(totalImagesToFetch * PREFERENCE_RATIO) - preferenceImagesFetched;
+
+    // Distribute shortfall
+    for (let i = 0; preferenceShortfall > 0 && i < 3; i++) {
+        const [category, _] = sortedPreferences[i];
+        let query = db.collection('images').where('metadata.predicted_class', '==', category);
+        if (lastDoc) {
+            query = query.startAfter(lastDoc);
+        }
+        query = query.limit(1); // Fetch 1 more image for this category
+
+        const snapshot = await query.get();
+        snapshot.forEach((doc) => {
+            if (!currentFetchedIds.has(doc.id)) {
+                images.push({ ...doc.data(), id: doc.id });
+                lastDoc = doc;
+                currentFetchedIds.add(doc.id);
+                preferenceShortfall--;
+            }
+        });
+    }
+
+    // Fetch the rest of the images without category preference
+    let randomImagesToFetch = totalImagesToFetch - images.length;
+    if (randomImagesToFetch > 0) {
+        let query = db.collection('images').orderBy('metadata.timestamp');
+        if (lastDoc) {
+            query = query.startAfter(lastDoc);
+        }
+        query = query.limit(randomImagesToFetch);
+
+        const snapshot = await query.get();
+        snapshot.forEach((doc) => {
+            if (!currentFetchedIds.has(doc.id)) {
+                images.push({ ...doc.data(), id: doc.id });
+                lastDoc = doc;
+                console.log(`Fetched random image from category: ${doc.data().metadata.predicted_class}`);
+                currentFetchedIds.add(doc.id);
+            }
+        });
+    }
+
+    console.log(`Total images fetched: ${images.length}`);
+    console.log('Fetched image IDs:', images.map(img => img.id));
+    return { images, lastDoc };
+};
+
+/* Usage:
+firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+        const { images, lastDoc } = await fetchImagesForUser(user.uid, db, startAfter, totalImagesToFetch, fetchedIds);
+        displayImages(images);
+    }
+});
+*/
 
 
+// Old code
+/*
 export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFetch, fetchedIds) => {
     const PREFERENCE_RATIO = 0.7; // 70% images based on preferences
     const WEIGHTS = [0.5, 0.3, 0.2]; // Weights for top 3 categories
@@ -33,7 +132,7 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
     // Fetch images based on top categories with different weights
     for (let i = 0; i < 3; i++) {
         const [category, _] = sortedPreferences[i];
-        const categoryImagesToFetch = Math.floor(totalImagesToFetch * PREFERENCE_RATIO * WEIGHTS[i]); // Use Math.floor instead of Math.ceil
+        let categoryImagesToFetch = Math.floor(totalImagesToFetch * PREFERENCE_RATIO * WEIGHTS[i]);
 
         let query = db.collection('images').where('metadata.predicted_class', '==', category);
         if (lastDoc) {
@@ -57,6 +156,19 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
 
     // Debugging: Log fetched image IDs
     // console.log('Fetched image IDs:', images.map(img => img.id));
+
+    // Calculate shortfall
+    let preferenceImagesFetched = images.length;
+    let preferenceShortfall = Math.ceil(totalImagesToFetch * PREFERENCE_RATIO) - preferenceImagesFetched;
+
+    // Distribute shortfall
+    for (let i = 0; preferenceShortfall > 0 && i < 3; i++) {
+        const [category, _] = sortedPreferences[i];
+        // Fetch 1 more image for this category
+        // Adjust fetch logic accordingly
+        preferenceShortfall--;
+        // Fetch images logic...
+    }
 
     // Fetch the rest of the images without category preference
     let randomImagesToFetch = totalImagesToFetch - images.length;
@@ -90,7 +202,7 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
     console.log('Fetched image IDs:', images.map(img => img.id));
     return { images, lastDoc };
 };
-
+*/
 
 // Usage
 /*firebase.auth().onAuthStateChanged(async (user) => {
