@@ -33,7 +33,7 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
     // Fetch images based on top categories with different weights
     for (let i = 0; i < 3; i++) {
         const [category, _] = sortedPreferences[i];
-        const categoryImagesToFetch = Math.ceil(totalImagesToFetch * PREFERENCE_RATIO * WEIGHTS[i]);
+        const categoryImagesToFetch = Math.floor(totalImagesToFetch * PREFERENCE_RATIO * WEIGHTS[i]); // Use Math.floor instead of Math.ceil
 
         let query = db.collection('images').where('metadata.predicted_class', '==', category);
         if (lastDoc) {
@@ -45,7 +45,7 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
         console.log(`Fetching ${categoryImagesToFetch} images from category: ${category}`);
 
         snapshot.forEach((doc) => {
-            if (!fetchedIds.has(doc.id)) { //&& !images.some(img => img.id === doc.id)) {
+            if (!fetchedIds.has(doc.id)) {
                 images.push({ ...doc.data(), id: doc.id });
                 lastDoc = doc; // Update lastDoc with the current document
                 currentFetchedIds.push(doc.id);
@@ -56,7 +56,7 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
     }
 
     // Debugging: Log fetched image IDs
-    console.log('Fetched image IDs:', images.map(img => img.id));
+    // console.log('Fetched image IDs:', images.map(img => img.id));
 
     // Fetch the rest of the images without category preference
     let randomImagesToFetch = totalImagesToFetch - images.length;
@@ -64,8 +64,8 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
     if (randomImagesToFetch > 0) {
         let query = db.collection('images').orderBy('metadata.timestamp');
 
-        if (startAfter) {
-            query = query.startAfter(startAfter);
+        if (lastDoc) {
+            query = query.startAfter(lastDoc);
         }
 
         query = query.limit(randomImagesToFetch);
@@ -75,6 +75,7 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
             if (!fetchedIds.has(doc.id) && !currentFetchedIds.includes(doc.id)) {
                 images.push({ ...doc.data(), id: doc.id });
                 lastDoc = doc;
+                console.log(`Fetched random image from category: ${doc.data().metadata.predicted_class}`);
             } else {
                 console.log('Skipped image:', doc.id);
             }
@@ -85,6 +86,8 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
         }
     }
 
+    console.log(`Total images fetched: ${images.length}`);
+    console.log('Fetched image IDs:', images.map(img => img.id));
     return { images, lastDoc };
 };
 
