@@ -475,7 +475,7 @@ function App() {
         <Router>
             <div className="App">
                 <header className="App-header">
-                    <h1>Ptuxiakh Manwlh</h1>
+                    <h1>Social Media App</h1>
                     {user && (
                         <div >
                             <div className="user-info">
