@@ -21,11 +21,11 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
     const PREFERENCE_RATIO = 0.7; // 70% images based on preferences
     const WEIGHTS = [0.5, 0.3, 0.2]; // Weights for top 3 categories
     const preferences = await fetchUserPreferences(userId, db);
-    const sortedPreferences = Object.entries(preferences).sort((a, b) => b[1] - a[1]);
+    const sortedPreferences = Object.entries(preferences).sort((a, b) => b[1] - a[1]); // Sort preferences based on score
 
-    let lastDoc = startAfter;
+    let lastDoc = startAfter; // This is used by the main app to avoid fetching the same images after each scroll
     let images = [];
-    let currentFetchedIds = new Set(fetchedIds);
+    let currentFetchedIds = new Set(fetchedIds); // This is used by this function to avoid fetching the same images after each scroll
 
     // Initial allocation with Math.floor
     for (let i = 0; i < 3; i++) {
