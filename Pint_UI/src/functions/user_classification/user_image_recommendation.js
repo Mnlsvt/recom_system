@@ -5,7 +5,6 @@ const fetchUserPreferences = async (userId, db) => {
     try {
         const doc = await userRef.get();
         if (doc.exists) {
-            // Assuming preferences are stored in a field named 'preferences'
             const preferences = doc.data().preferences;
             return preferences; // This should be an object like { nature: 3, cars: 5, movies: 1 }
         } else {
