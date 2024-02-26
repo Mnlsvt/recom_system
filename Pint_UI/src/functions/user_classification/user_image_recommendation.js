@@ -27,13 +27,13 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
     let images = [];
     let currentFetchedIds = new Set(fetchedIds); // This is used by this function to avoid fetching the same images after each scroll
 
-    // Initial allocation with Math.floor
-    for (let i = 0; i < 3; i++) {
+    // Preference based image fetching
+    for (let i = 0; i < 3; i++) { // Fetch images for the top 3 categories
         const [category, _] = sortedPreferences[i];
         let categoryImagesToFetch = totalImagesToFetch * PREFERENCE_RATIO * WEIGHTS[i];
-        if (categoryImagesToFetch) {
+        if (categoryImagesToFetch) { // round the weights based on the decimal part 
             const decimalPart = categoryImagesToFetch % 1;
-            if (decimalPart >= 0.5) {
+            if (decimalPart >= 0.5) { 
                 categoryImagesToFetch = Math.ceil(categoryImagesToFetch);
             } else {
                 categoryImagesToFetch = Math.floor(categoryImagesToFetch);
@@ -43,7 +43,7 @@ export const fetchImagesForUser = async (userId, db, startAfter, totalImagesToFe
         if (lastDoc) {
             query = query.startAfter(lastDoc);
         }
-        query = query.limit(categoryImagesToFetch);
+        query = query.limit(categoryImagesToFetch); // Limit to the number that is calculated using weights
 
         const snapshot = await query.get();
         console.log(`Fetching ${categoryImagesToFetch} images from category: ${category}`);
