@@ -403,7 +403,7 @@ def process_image_task(image_id):
             response_data = {
                 'image_id': image_id,
                 'attribute_predictions': attribute_predictions,
-                'backgroundSpace': processed_attributes,
+                'backgroundSpace': background_space,
                 'objectsFound': list(final_objectsList),
                 'predicted_class': 'unknown',  # Default class in case of error
                 'gpt': 'no'
@@ -429,38 +429,11 @@ def predict():
         return jsonify({"error": "No image_id provided"}), 400
 
     image_id = request.form['image_id']
-    task = process_image_task.delay(image_id)
+    task = process_image_task(image_id)
 
     # Return a response with the task ID
     return jsonify({"task_id": task.id}), 202
 
-'''
-@app.route('/status/<task_id>')
-def task_status(task_id):
-    task = process_image_task.AsyncResult(task_id)
-    if task.state == 'PENDING':
-        response = {
-            'state': task.state,
-            'status': 'Pending...'
-        }
-    elif task.state != 'FAILURE':
-        response = {
-            'state': task.state,
-            'result': task.result,
-            'status': task.status
-        }
-        if task.state == 'SUCCESS':
-            # Here you can handle the successful task result,
-            # e.g., insert the result into the database if needed.
-            pass
-    else:
-        # something went wrong in the background job
-        response = {
-            'state': task.state,
-            'status': str(task.info),  # this is the exception raised
-        }
-    return jsonify(response)
-'''
     
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

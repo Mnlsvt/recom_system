@@ -28,7 +28,6 @@ def predict():
 
     # Parse the response from the local server
     response_data = response.json()
-    print("geia", response_data)
 
     # Get the document reference from the form data
     doc_ref = db.collection('images').document(form_data['image_id'])
